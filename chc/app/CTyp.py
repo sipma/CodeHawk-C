@@ -184,7 +184,6 @@ class CTypBase(CD.CDictionaryRecord):
         return {"t": self.tags, "a": self.args}
 
 
-@CD.c_dictionary_record_tag("tvoid")
 class CTypVoid(CTypBase):
     """
     tags:
@@ -216,7 +215,6 @@ class CTypVoid(CTypBase):
         return "void" + "[" + str(self.get_attributes()) + "]"
 
 
-@CD.c_dictionary_record_tag("tint")
 class CTypInt(CTypBase):
     """
     tags:
@@ -259,7 +257,6 @@ class CTypInt(CTypBase):
         return integernames[self.get_kind()] + str(self.get_attributes_string())
 
 
-@CD.c_dictionary_record_tag("tfloat")
 class CTypFloat(CTypBase):
     """
     tags:
@@ -298,7 +295,6 @@ class CTypFloat(CTypBase):
         return floatnames[self.get_kind()]
 
 
-@CD.c_dictionary_record_tag("tnamed")
 class CTypNamed(CTypBase):
     """
     tags:
@@ -344,7 +340,6 @@ class CTypNamed(CTypBase):
         return self.get_name() + str(self.get_attributes_string())
 
 
-@CD.c_dictionary_record_tag("tcomp")
 class CTypComp(CTypBase):
     """
     tags:
@@ -402,7 +397,6 @@ class CTypComp(CTypBase):
             return "union " + self.get_name() + "(" + str(self.get_ckey()) + ")"
 
 
-@CD.c_dictionary_record_tag("tenum")
 class CTypEnum(CTypBase):
     """
     tags:
@@ -443,8 +437,6 @@ class CTypEnum(CTypBase):
         return "enum " + self.get_name()
 
 
-@CD.c_dictionary_record_tag("tbuiltinvaargs")
-@CD.c_dictionary_record_tag("tbuiltin-va-list")
 class CTypBuiltinVaargs(CTypBase):
     """
     tags:
@@ -476,7 +468,6 @@ class CTypBuiltinVaargs(CTypBase):
         return "tbuiltin_va_args"
 
 
-@CD.c_dictionary_record_tag("tptr")
 class CTypPtr(CTypBase):
     """
     tags:
@@ -518,7 +509,6 @@ class CTypPtr(CTypBase):
         return "(" + str(self.get_pointedto_type()) + " *)"
 
 
-@CD.c_dictionary_record_tag("tarray")
 class CTypArray(CTypBase):
     """
     tags:
@@ -579,7 +569,6 @@ class CTypArray(CTypBase):
         return str(self.get_array_basetype()) + "[" + ssize + "]"
 
 
-@CD.c_dictionary_record_tag("tfun")
 class CTypFun(CTypBase):
     """
     tags:

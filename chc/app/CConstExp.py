@@ -68,7 +68,6 @@ class CConstBase(CD.CDictionaryRecord):
         return "constantbase:" + self.tags[0]
 
 
-@CD.c_dictionary_record_tag("int")
 class CConstInt(CConstBase):
     """
     tags:
@@ -101,7 +100,6 @@ class CConstInt(CConstBase):
         return str(self.get_int())
 
 
-@CD.c_dictionary_record_tag("str")
 class CConstStr(CConstBase):
     """
     tags:
@@ -136,7 +134,6 @@ class CConstStr(CConstBase):
         return "str(" + strg + ")"
 
 
-@CD.c_dictionary_record_tag("wstr")
 class CConstWStr(CConstBase):
     """
     tags:
@@ -162,7 +159,6 @@ class CConstWStr(CConstBase):
         return "wstr(" + self.get_string() + ")"
 
 
-@CD.c_dictionary_record_tag("chr")
 class CConstChr(CConstBase):
     """
     tags:
@@ -191,7 +187,6 @@ class CConstChr(CConstBase):
         return "chr(" + self.get_chr() + ")"
 
 
-@CD.c_dictionary_record_tag("real")
 class CConstReal(CConstBase):
     """
     tags:
@@ -223,7 +218,6 @@ class CConstReal(CConstBase):
         return str(self.get_real())
 
 
-@CD.c_dictionary_record_tag("enum")
 class CConstEnum(CConstBase):
     """
     tags:

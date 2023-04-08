@@ -99,7 +99,6 @@ class CAttrBase(CD.CDictionaryRecord):
         return "attrparam:" + self.tags[0]
 
 
-@CD.c_dictionary_record_tag("aint")
 class CAttrInt(CAttrBase):
     def __init__(
         self,
@@ -120,7 +119,6 @@ class CAttrInt(CAttrBase):
         return "aint(" + str(self.get_int()) + ")"
 
 
-@CD.c_dictionary_record_tag("astr")
 class CAttrStr(CAttrBase):
     def __init__(
         self,
@@ -141,7 +139,6 @@ class CAttrStr(CAttrBase):
         return "astr(" + str(self.get_str()) + ")"
 
 
-@CD.c_dictionary_record_tag("acons")
 class CAttrCons(CAttrBase):
     def __init__(
         self,
@@ -165,7 +162,6 @@ class CAttrCons(CAttrBase):
         return "acons(" + str(self.get_cons()) + ")"
 
 
-@CD.c_dictionary_record_tag("asizeof")
 class CAttrSizeOf(CAttrBase):
     def __init__(
         self,
@@ -186,7 +182,6 @@ class CAttrSizeOf(CAttrBase):
         return "asizeof(" + str(self.get_type()) + ")"
 
 
-@CD.c_dictionary_record_tag("asizeofe")
 class CAttrSizeOfE(CAttrBase):
     def __init__(
         self,
@@ -207,7 +202,6 @@ class CAttrSizeOfE(CAttrBase):
         return "asizeofe(" + str(self.get_param()) + ")"
 
 
-@CD.c_dictionary_record_tag("asizeofs")
 class CAttrSizeOfS(CAttrBase):
     def __init__(
         self,
@@ -228,7 +222,6 @@ class CAttrSizeOfS(CAttrBase):
         return "asizeofs(" + str(self.get_typsig()) + ")"
 
 
-@CD.c_dictionary_record_tag("aalignof")
 class CAttrAlignOf(CAttrBase):
     def __init__(
         self,
@@ -249,7 +242,6 @@ class CAttrAlignOf(CAttrBase):
         return "aalignof(" + str(self.get_type()) + ")"
 
 
-@CD.c_dictionary_record_tag("aalignofe")
 class CAttrAlignOfE(CAttrBase):
     def __init__(
         self,
@@ -270,7 +262,6 @@ class CAttrAlignOfE(CAttrBase):
         return "aalignofe(" + str(self.get_param()) + ")"
 
 
-@CD.c_dictionary_record_tag("aalignofs")
 class CAttrAlignOfS(CAttrBase):
     def __init__(
         self,
@@ -291,7 +282,6 @@ class CAttrAlignOfS(CAttrBase):
         return "aalignofs(" + str(self.get_typsig()) + ")"
 
 
-@CD.c_dictionary_record_tag("aunop")
 class CAttrUnOp(CAttrBase):
     def __init__(
         self,
@@ -315,7 +305,6 @@ class CAttrUnOp(CAttrBase):
         return "aunop(" + self.get_op() + "," + str(self.get_param()) + ")"
 
 
-@CD.c_dictionary_record_tag("abinop")
 class CAttrBinOp(CAttrBase):
     def __init__(
         self,
@@ -350,7 +339,6 @@ class CAttrBinOp(CAttrBase):
         )
 
 
-@CD.c_dictionary_record_tag("adot")
 class CAttrDot(CAttrBase):
     def __init__(
         self,
@@ -374,7 +362,6 @@ class CAttrDot(CAttrBase):
         return "adot(" + self.get_name() + "," + str(self.get_param()) + ")"
 
 
-@CD.c_dictionary_record_tag("astr")
 class CAttrStar(CAttrBase):
     def __init__(
         self,
@@ -395,7 +382,6 @@ class CAttrStar(CAttrBase):
         return "astar(" + str(self.get_param()) + ")"
 
 
-@CD.c_dictionary_record_tag("aaddrof")
 class CAttrAddrOf(CAttrBase):
     def __init__(
         self,
@@ -416,7 +402,6 @@ class CAttrAddrOf(CAttrBase):
         return "aaddrof(" + str(self.get_param()) + ")"
 
 
-@CD.c_dictionary_record_tag("aindex")
 class CAttrIndex(CAttrBase):
     def __init__(
         self,
@@ -440,7 +425,6 @@ class CAttrIndex(CAttrBase):
         return "aindex(" + str(self.get_param1()) + "," + str(self.get_param2()) + ")"
 
 
-@CD.c_dictionary_record_tag("aquestion")
 class CAttrQuestion(CAttrBase):
     def __init__(
         self,

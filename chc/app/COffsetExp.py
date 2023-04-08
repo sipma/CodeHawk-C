@@ -68,7 +68,6 @@ class COffsetBase(CD.CDictionaryRecord):
         return "offsetbase:" + self.tags[0]
 
 
-@CD.c_dictionary_record_tag("n")
 class CNoOffset(COffsetBase):
     def __init__(
         self,
@@ -89,7 +88,6 @@ class CNoOffset(COffsetBase):
         return ""
 
 
-@CD.c_dictionary_record_tag("f")
 class CFieldOffset(COffsetBase):
     def __init__(
         self,
@@ -123,7 +121,6 @@ class CFieldOffset(COffsetBase):
         return "." + self.get_fieldname() + offset
 
 
-@CD.c_dictionary_record_tag("i")
 class CIndexOffset(COffsetBase):
     def __init__(
         self,
