@@ -24,8 +24,6 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 # ------------------------------------------------------------------------------
-
-from typing import Any, Callable, Dict, Iterable, List, Optional, TYPE_CHECKING
 import os
 import logging
 import multiprocessing
@@ -43,23 +41,20 @@ from chc.app.CGlobalDeclarations import CGlobalDeclarations
 
 from chc.source.CSrcFile import CSrcFile
 
-if TYPE_CHECKING:
-    from chc.app.CFunction import CFunction
-
 
 class CApplication(object):
     """Primary access point for source code and analysis results."""
 
     def __init__(
         self,
-        path: str,
-        cfilename: Optional[str] = None,
-        srcpath: Optional[str] = None,
-        contractpath: Optional[str] = None,
-        candidate_contractpath: Optional[str] = None,
-        excludefiles: List[str] = [],
-        includefiles: Optional[List[str]] = None,
-    ) -> None:
+        path,
+        cfilename=None,
+        srcpath=None,
+        contractpath=None,
+        candidate_contractpath=None,
+        excludefiles=[],
+        includefiles=None,
+    ):
         self.singlefile = not (cfilename is None)
         self.path = UF.get_chc_artifacts_path(path)
         self.srcpath = os.path.join(path, "sourcefiles") if srcpath is None else srcpath
@@ -71,83 +66,77 @@ class CApplication(object):
         if self.contractpath is not None:
             self.globalcontract = CGlobalContract(self)
         self.candidate_contractpath = candidate_contractpath
-        self.filenames: Dict[int, str] = {}  # file index -> filename
-        self.files: Dict[str, CFile] = {}  # filename -> CFile
+        self.filenames = {}  # file index -> filename
+        self.files = {}  # filename -> CFile
         if self.singlefile:
             self.declarations = None  # TBD: set to CFileDeclarations
         else:
             self.declarations = CGlobalDeclarations(self)
         self.indexmanager = IndexManager(self.singlefile)
-        self.callgraph: Dict[Any, Any] = {}  # (fid,vid) -> (callsitespos, (tgtfid,tgtvid))
-        self.revcallgraph: Dict[Any, Any] = {}  # (tgtfid,tgtvid) -> ((fid,vid),callsitespos)
+        self.callgraph = {}  # (fid,vid) -> (callsitespos, (tgtfid,tgtvid))
+        self.revcallgraph = {}  # (tgtfid,tgtvid) -> ((fid,vid),callsitespos)
         self._initialize(cfilename)
 
-    def get_filenames(self) -> Iterable[str]:
+    def get_filenames(self):
         return self.filenames.values()
 
     """Returns true if name is a base filename."""
 
-    def is_application_header(self, name: str) -> bool:
+    def is_application_header(self, name):
         for n in self.get_filenames():
             if name == os.path.basename(n[:-2]):
                 return True
         else:
             return False
 
-    def get_max_filename_length(self) -> int:
+    def get_max_filename_length(self):
         return max([len(x) for x in self.get_filenames()])
 
-    def get_filename_dictionary(self) -> Dict[str, List[str]]:
-        result: Dict[str, List[str]] = {}
+    def get_filename_dictionary(self):
+        result = {}
         for f in self.get_files():
             result[f.name] = []
             for fn in f.get_functions():
                 result[f.name].append(fn.name)
         return result
 
-    def get_files(self) -> Iterable[CFile]:
+    def get_files(self):
         self._initialize_files()
         return sorted(self.files.values(), key=lambda x: x.name)
 
-    def has_single_file(self) -> bool:
+    def has_single_file(self):
         return 0 in self.filenames
 
     # return file from single-file application
-    def get_single_file(self) -> CFile:
+    def get_single_file(self):
         if 0 in self.filenames:
             return self.files[self.filenames[0]]
         else:
             tgtxnode = UF.get_targetfiles_xnode(self.path)
-            if not tgtxnode:
-                raise UF.CHCSingleCFileNotFoundError([])
-            filenames = [(c.get("name") or "") for c in tgtxnode.findall("c-file")]
+            filenames = [c.get("name") for c in tgtxnode.findall("c-file")]
             raise UF.CHCSingleCFileNotFoundError(filenames)
 
-    def get_cfile(self) -> CFile:
+    def get_cfile(self):
         if self.singlefile:
             return self.get_single_file()
-        raise UF.CHCSingleCFileNotFoundError([])
 
-    def get_file(self, fname: str) -> CFile:
+    def get_file(self, fname):
         self._initialize_files()
         index = self.get_file_index(fname)
         self._initialize_file(index, fname)
         if fname in self.files:
             return self.files[fname]
-        raise Exception("Could not find file \"" + fname + "\"")
 
-    def get_file_by_index(self, index: int) -> CFile:
+    def get_file_by_index(self, index):
         if index in self.filenames:
             return self.get_file(self.filenames[index])
-        raise Exception("Could not find file with index \"" + str(index) + "\"")
 
-    def get_file_index(self, fname: str) -> int:
+    def get_file_index(self, fname):
         for i in self.filenames:
             if self.filenames[i] == fname:
                 return i
-        raise Exception("Could not find file named \"" + fname + "\"")
 
-    def get_srcfile(self, fname: str) -> CSrcFile:
+    def get_srcfile(self, fname):
         srcfile = os.path.join(self.srcpath, fname)
         return CSrcFile(self, srcfile)
 
@@ -158,11 +147,11 @@ class CApplication(object):
             return self.revcallgraph[(fid, vid)]
         return []
 
-    def iter_files(self, f: Callable[[CFile], None]) -> None:
+    def iter_files(self, f):
         for file in self.get_files():
             f(file)
 
-    def iter_files_parallel(self, f: Callable[[CFile], None], processes: int) -> None:
+    def iter_files_parallel(self, f, processes):
         for fname in self.get_files():
             while len(multiprocessing.active_children()) >= processes:
                 pass
@@ -172,11 +161,11 @@ class CApplication(object):
         while len(multiprocessing.active_children()) > 0:
             pass
 
-    def iter_filenames(self, f: Callable[[str], None]) -> None:
+    def iter_filenames(self, f):
         for fname in self.filenames.values():
             f(fname)
 
-    def iter_filenames_parallel(self, f: Callable[[str], None], processes: int) -> None:
+    def iter_filenames_parallel(self, f, processes):
         for fname in self.filenames.values():
             while len(multiprocessing.active_children()) >= processes:
                 pass
@@ -186,14 +175,14 @@ class CApplication(object):
         while len(multiprocessing.active_children()) > 0:
             pass
 
-    def iter_functions(self, f: Callable[["CFunction"], None]) -> None:
-        def g(fi: CFile) -> None:
+    def iter_functions(self, f):
+        def g(fi):
             fi.iter_functions(f)
 
         self.iter_files(g)
 
-    def iter_functions_parallel(self, f: Callable[["CFunction"], None], maxprocesses: int) -> None:
-        def g(fi: CFile) -> None:
+    def iter_functions_parallel(self, f, maxprocesses):
+        def g(fi):
             fi.iter_functions(f)
 
         self.iter_files_parallel(g, maxprocesses)
@@ -443,43 +432,35 @@ class CApplication(object):
         self.iter_functions(f)
         return result
 
-    def _initialize(self, fname: Optional[str]) -> None:
+    def _initialize(self, fname):
         if fname is None:
             # read target_files.xml file to retrieve application files
             tgtxnode = UF.get_targetfiles_xnode(self.path)
-            if tgtxnode is None:
-                raise UF.CHCXmlParseError(self.path, 0, (0, 0))
             if self.includefiles is None:
                 for c in tgtxnode.findall("c-file"):
-                    found_name = c.get("name")
-                    if found_name is None:
-                        raise UF.CHCXmlParseError(self.path, 0, (0, 0))
-                    if found_name in self.excludefiles:
+                    if c.get("name") in self.excludefiles:
                         continue
-                    id = c.get("id")
+                    id = int(c.get("id"))
                     if id is None:
-                        print("No id found for " + (found_name or "(name not found)"))
+                        print("No id found for " + c.get("name"))
                     else:
-                        self.filenames[int(id)] = found_name
+                        self.filenames[int(id)] = c.get("name")
             else:
                 for c in tgtxnode.findall("c-file"):
-                    found_name = c.get("name")
-                    if found_name is None:
-                        raise UF.CHCXmlParseError(self.path, 0, (0, 0))
-                    if found_name in self.includefiles:
-                        id = c.get("id")
+                    if c.get("name") in self.includefiles:
+                        id = int(c.get("id"))
                         if id is None:
-                            print("No id found for " + found_name)
+                            print("No id found for " + c.get("name"))
                         else:
-                            self.filenames[int(id)] = found_name
+                            self.filenames[int(id)] = c.get("name")
         else:
             self._initialize_file(0, fname)
 
-    def _initialize_files(self) -> None:
+    def _initialize_files(self):
         for i, f in self.filenames.items():
             self._initialize_file(i, f)
 
-    def _initialize_file(self, index: int, fname: str) -> None:
+    def _initialize_file(self, index, fname):
         if fname in self.files:
             return
 
@@ -490,16 +471,14 @@ class CApplication(object):
             self.indexmanager.add_file(self.files[fname])
         else:
             tgtxnode = UF.get_targetfiles_xnode(self.path)
-            if tgtxnode is None:
-                raise UF.CHCXmlParseError(self.path, 0, (0, 0))
-            filenames = [c.get("name") or "name not found" for c in tgtxnode.findall("c-file")]
-            raise UF.CFileNotFoundException(filenames)
+            filenames = [c.get("name") for c in tgtxnode.findall("c-file")]
+            raise CFileNotFoundException(filenames)
 
-    def _initialize_callgraphs(self) -> None:
+    def _initialize_callgraphs(self):
         if len(self.callgraph) > 0:
             return
 
-        def collectcallers(fn: "CFunction") -> None:
+        def collectcallers(fn):
             fid = fn.cfile.index
             vid = fn.svar.get_vid()
 

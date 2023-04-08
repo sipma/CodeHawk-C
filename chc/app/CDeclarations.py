@@ -36,5 +36,9 @@ class CDeclarations(ABC):
         self.dictionary = dictionary
 
     @abstractmethod
+    def get_location(self, ix):
+        ...
+
+    @abstractmethod
     def get_initinfo(self, ix):
         ...
