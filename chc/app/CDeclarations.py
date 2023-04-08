@@ -32,7 +32,6 @@ from chc.app.CDictionary import CDictionary
 
 if TYPE_CHECKING:
     from chc.app.CFieldInfo import CFieldInfo
-    from chc.app.CInitInfo import CInitInfoBase, COffsetInitInfo
 
 
 class CDeclarations(ABC):
@@ -41,13 +40,9 @@ class CDeclarations(ABC):
         self.dictionary = dictionary
 
     @abstractmethod
-    def get_initinfo(self, ix: int) -> "CInitInfoBase":
+    def get_initinfo(self, ix):
         ...
 
     @abstractmethod
     def get_fieldinfo(self, ix: int) -> "CFieldInfo":
-        ...
-
-    @abstractmethod
-    def get_offset_init(self, ix: int) -> "COffsetInitInfo":
         ...

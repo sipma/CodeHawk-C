@@ -33,7 +33,6 @@ if TYPE_CHECKING:
     import chc.app.CExp as CE
     import chc.app.CTyp as CT
     from chc.app.CDeclarations import CDeclarations
-    from chc.app.COffsetExp import COffsetBase
 
 
 class CInitInfoBase(CD.CDeclarationsRecord):
@@ -47,6 +46,9 @@ class CInitInfoBase(CD.CDeclarationsRecord):
 
     def is_compound(self) -> bool:
         return False
+
+    def __str__(self):
+        return self.name + ":" + str(self.type)
 
 
 class CSingleInitInfo(CInitInfoBase):
@@ -74,7 +76,7 @@ class CCompoundInitInfo(CInitInfoBase):
     def get_typ(self) -> "CT.CTypBase":
         return self.get_dictionary().get_typ(self.args[0])
 
-    def get_offset_initializers(self) -> List["COffsetInitInfo"]:
+    def get_offset_initializers(self):
         return [self.decls.get_offset_init(x) for x in self.args[1:]]
 
     def is_compound(self) -> bool:
@@ -90,10 +92,10 @@ class COffsetInitInfo(CD.CDeclarationsRecord):
     def __init__(self, decls: "CDeclarations", index: int, tags: List[str], args: List[int]):
         CD.CDeclarationsRecord.__init__(self, decls, index, tags, args)
 
-    def get_offset(self) -> "COffsetBase":
+    def get_offset(self):
         return self.get_dictionary().get_offset(self.args[0])
 
-    def get_initializer(self) -> CInitInfoBase:
+    def get_initializer(self):
         return self.decls.get_initinfo(self.args[1])
 
     def __str__(self) -> str:

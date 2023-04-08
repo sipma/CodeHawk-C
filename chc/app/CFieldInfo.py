@@ -25,15 +25,12 @@
 # SOFTWARE.
 # ------------------------------------------------------------------------------
 
-from typing import cast, List, Optional, TYPE_CHECKING
+from typing import List, TYPE_CHECKING
 
 import chc.app.CDictionaryRecord as CD
 
 if TYPE_CHECKING:
-    from chc.app.CAttributes import CAttributes
     from chc.app.CDeclarations import CDeclarations
-    from chc.app.CFileDeclarations import CFileDeclarations
-    from chc.app.CLocation import CLocation
 
 
 class CFieldInfo(CD.CDeclarationsRecord):
@@ -65,15 +62,13 @@ class CFieldInfo(CD.CDeclarationsRecord):
     def get_size(self) -> int:
         return self.ftype.get_size()
 
-    def get_location(self) -> Optional["CLocation"]:
+    def get_location(self):
         if self.args[4] >= 0:
-            return cast("CFileDeclarations", self.decls).get_location(self.args[4])
-        return None
+            return self.decls.get_location(self.args[4])
 
-    def get_attributes(self) -> Optional["CAttributes"]:
+    def get_attributes(self):
         if self.args[3] >= 0:
-            return self.get_dictionary().get_attributes(self.args[3])
-        return None
+            return self.decls.get_attributes(self.args[3])
 
     def __str__(self) -> str:
         return self.fname + ":" + str(self.ftype)

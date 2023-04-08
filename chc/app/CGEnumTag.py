@@ -32,9 +32,9 @@ from chc.app.CLocation import CLocation
 class CGEnumTag(object):
     """File-level definition of an enum."""
 
-    def __init__(self, enuminfo: CEnumInfo, location: CLocation):
+    def __init__(self, enuminfo, location):
         self.enuminfo = enuminfo
         self.location = location
 
-    def __str__(self) -> str:
+    def __str__(self):
         return str(self.enuminfo)
