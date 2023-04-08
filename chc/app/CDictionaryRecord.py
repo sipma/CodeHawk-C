@@ -31,8 +31,7 @@ import xml.etree.ElementTree as ET
 import chc.util.IndexedTable as IT
 
 if TYPE_CHECKING:
-    from chc.app.CDeclarations import CDeclarations
-    from chc.app.CDictionary import CDictionary
+    import chc.app.CDictionary
 
 
 class CDictionaryRecord(IT.IndexedTableValue):
@@ -40,7 +39,7 @@ class CDictionaryRecord(IT.IndexedTableValue):
 
     def __init__(
         self,
-        cd: "CDictionary",
+        cd: "chc.app.CDictionary.CDictionary",
         index: int,
         tags: List[str],
         args: List[int],
@@ -62,28 +61,22 @@ class CDictionaryRecord(IT.IndexedTableValue):
         node.set("ix", str(self.index))
 
 
-class CDeclarationsRecord(IT.IndexedTableValue):
-    """Base class for all objects kept in the CDeclarations."""
+class CDeclarationsRecord(object):
+    """Base class for all objects kept in the CFileDeclarations."""
 
-    def __init__(
-        self,
-        decls: "CDeclarations",
-        index: int,
-        tags: List[str],
-        args: List[int],
-    ) -> None:
+    def __init__(self, decls, index, tags, args):
         self.decls = decls
         self.index = index
         self.tags = tags
         self.args = args
 
-    def get_key(self) -> Tuple[str, str]:
+    def get_key(self):
         return (",".join(self.tags), ",".join([str(x) for x in self.args]))
 
-    def get_dictionary(self) -> "CDictionary":
+    def get_dictionary(self):
         return self.decls.dictionary
 
-    def write_xml(self, node: ET.Element) -> None:
+    def write_xml(self, node):
         (tagstr, argstr) = self.get_key()
         if len(tagstr) > 0:
             node.set("t", tagstr)
