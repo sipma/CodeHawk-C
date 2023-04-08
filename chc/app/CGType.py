@@ -32,9 +32,9 @@ from chc.app.CLocation import CLocation
 class CGType(object):
     """A type definition that associates a name with a type."""
 
-    def __init__(self, typeinfo: CTypeInfo, location: CLocation) -> None:
+    def __init__(self, typeinfo, location):
         self.typeinfo = typeinfo
         self.location = location
 
-    def __str__(self) -> str:
+    def __str__(self):
         return str(self.typeinfo)

@@ -25,20 +25,15 @@
 # SOFTWARE.
 # ------------------------------------------------------------------------------
 
-from typing import Tuple, TYPE_CHECKING
-
 import chc.util.fileutil as UF
 import chc.util.IndexedTable as IT
 import chc.app.CTyp as CT
 
 from chc.app.CDictionary import CDictionary
 
-if TYPE_CHECKING:
-    from chc.app.CGlobalDeclarations import CGlobalDeclarations
-
 
 class CGlobalDictionary(CDictionary):
-    def __init__(self, decls: "CGlobalDeclarations") -> None:
+    def __init__(self, decls):
         CDictionary.__init__(self)
         self.decls = decls
         self.capp = decls.capp
@@ -50,15 +45,15 @@ class CGlobalDictionary(CDictionary):
     def index_varinfo_vid(self, varinfo, fid):
         return self.decls.index_varinfo_vid(varinfo, fid)
 
-    def index_funarg(self, funarg: CT.CFunArg) -> int:
+    def index_funarg(self, funarg):
         tags = ["arg"]
         args = [self.index_typ(funarg.get_type())]
 
-        def f(index: int, key: Tuple[str, str]) -> CT.CFunArg:
+        def f(index, key):
             return CT.CFunArg(self, index, tags, args)
 
         return self.funarg_table.add(IT.get_key(tags, args), f)
 
-    def _initialize(self) -> None:
+    def _initialize(self):
         xnode = UF.get_global_dictionary_xnode(self.capp.path)
         CDictionary.initialize(self, xnode)

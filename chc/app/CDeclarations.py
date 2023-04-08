@@ -26,12 +26,8 @@
 # ------------------------------------------------------------------------------
 
 from abc import ABC, abstractmethod
-from typing import TYPE_CHECKING
 
 from chc.app.CDictionary import CDictionary
-
-if TYPE_CHECKING:
-    from chc.app.CFieldInfo import CFieldInfo
 
 
 class CDeclarations(ABC):
@@ -41,8 +37,4 @@ class CDeclarations(ABC):
 
     @abstractmethod
     def get_initinfo(self, ix):
-        ...
-
-    @abstractmethod
-    def get_fieldinfo(self, ix: int) -> "CFieldInfo":
         ...
