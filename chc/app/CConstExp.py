@@ -117,10 +117,10 @@ class CConstStr(CConstBase):
     ) -> None:
         CConstBase.__init__(self, cd, index, tags, args)
 
-    def get_string(self) -> str:
+    def get_string(self):
         return self.cd.get_string(self.args[0])
 
-    def get_strings(self) -> List[str]:
+    def get_strings(self):
         return [self.get_string()]
 
     def is_str(self) -> bool:
