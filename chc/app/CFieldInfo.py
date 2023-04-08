@@ -25,12 +25,7 @@
 # SOFTWARE.
 # ------------------------------------------------------------------------------
 
-from typing import List, TYPE_CHECKING
-
 import chc.app.CDictionaryRecord as CD
-
-if TYPE_CHECKING:
-    import chc.app.CDictionary
 
 
 class CFieldInfo(CD.CDeclarationsRecord):
@@ -47,14 +42,8 @@ class CFieldInfo(CD.CDeclarationsRecord):
         4: floc        (-1 for global structs)
     """
 
-    def __init__(
-        self,
-        cd: "chc.app.CDictionary.CDictionary",
-        index: int,
-        tags: List[str],
-        args: List[int],
-    ) -> None:
-        CD.CDeclarationsRecord.__init__(self, cd, index, tags, args)
+    def __init__(self, cdecls, index, tags, args):
+        CD.CDeclarationsRecord.__init__(self, cdecls, index, tags, args)
         self.fname = self.tags[0]
         self.ftype = self.get_dictionary().get_typ(self.args[1])
         self.bitfield = self.args[2]
@@ -70,5 +59,5 @@ class CFieldInfo(CD.CDeclarationsRecord):
         if self.args[3] >= 0:
             return self.decls.get_attributes(self.args[3])
 
-    def __str__(self) -> str:
+    def __str__(self):
         return self.fname + ":" + str(self.ftype)

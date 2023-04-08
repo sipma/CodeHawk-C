@@ -26,15 +26,12 @@
 # ------------------------------------------------------------------------------
 
 import logging
-from typing import Any, Dict, List, Optional, Tuple, TYPE_CHECKING
-import xml.etree.ElementTree as ET
+from typing import List, Tuple, TYPE_CHECKING
 
 import chc.app.CDictionaryRecord as CD
 
 if TYPE_CHECKING:
     import chc.app.CDictionary
-    import chc.app.CExp as CE
-    import chc.app.CAttributes as CA
 
 integernames = {
     "ichar": "char",
@@ -79,10 +76,10 @@ class CTypBase(CD.CDictionaryRecord):
     ) -> None:
         CD.CDictionaryRecord.__init__(self, cd, index, tags, args)
 
-    def expand(self) -> "CTypBase":
+    def expand(self):
         return self
 
-    def strip_attributes(self) -> "CTypBase":
+    def strip_attributes(self):
         aindex = attribute_index[self.tags[0]]
         if aindex >= len(self.args):
             return self
@@ -103,26 +100,26 @@ class CTypBase(CD.CDictionaryRecord):
                 )
             return newtyp
 
-    def get_typ(self, ix: int) -> "CTypBase":
+    def get_typ(self, ix):
         return self.cd.get_typ(ix)
 
-    def get_exp(self, ix: int) -> "CE.CExpBase":
+    def get_exp(self, ix):
         return self.cd.get_exp(ix)
 
-    def get_exp_opt(self, ix: int) -> Optional["CE.CExpBase"]:
+    def get_exp_opt(self, ix):
         return self.cd.get_exp_opt(ix)
 
-    def get_size(self) -> int:
+    def get_size(self):
         return -1000
 
-    def get_attributes(self) -> "CA.CAttributes":
+    def get_attributes(self):
         aindex = attribute_index[self.tags[0]]
         if len(self.args) > aindex:
             return self.cd.get_attributes(int(self.args[aindex]))
         else:
             return self.cd.get_attributes(1)
 
-    def get_attributes_string(self) -> str:
+    def get_attributes_string(self):
         attrs = self.get_attributes()
         if attrs.length() > 0:
             return "[" + str(attrs) + "]"
@@ -165,21 +162,21 @@ class CTypBase(CD.CDictionaryRecord):
     def is_void(self) -> bool:
         return False
 
-    def is_default_function_prototype(self) -> bool:
+    def is_default_function_prototype(self):
         return False
 
-    def writexml(self, cnode: ET.Element) -> None:
+    def writexml(self, cnode):
         cnode.set("ix", str(self.index))
         cnode.set("tags", ",".join(self.tags))
-        cnode.set("args", ",".join([str(int(x)) for x in self.args]))
+        cnode.set("args", ",".join([int(x) for x in self.args]))
 
-    def __str__(self) -> str:
+    def __str__(self):
         return "typebase:" + self.tags[0]
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self):
         return {"base": "type"}
 
-    def to_idict(self) -> Dict[str, Any]:
+    def to_idict(self):
         return {"t": self.tags, "a": self.args}
 
 
@@ -204,10 +201,10 @@ class CTypVoid(CTypBase):
     def is_void(self) -> bool:
         return True
 
-    def get_opaque_type(self) -> CTypBase:
+    def get_opaque_type(self):
         return self
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self):
         return {"base": "void"}
 
     def __str__(self) -> str:
@@ -246,10 +243,10 @@ class CTypInt(CTypBase):
     def get_kind(self) -> str:
         return self.tags[1]
 
-    def get_opaque_type(self) -> CTypBase:
+    def get_opaque_type(self):
         return self
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self):
         return {"base": "int", "kind": self.get_kind()}
 
     def __str__(self) -> str:
@@ -284,10 +281,10 @@ class CTypFloat(CTypBase):
     def get_size(self) -> int:
         return 4  # TBD: adjust for kind
 
-    def get_opaque_type(self) -> CTypBase:
+    def get_opaque_type(self):
         return self
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self):
         return {"base": "float", "kind": self.get_kind()}
 
     def __str__(self) -> str:
@@ -313,13 +310,13 @@ class CTypNamed(CTypBase):
     ) -> None:
         CTypBase.__init__(self, cd, index, tags, args)
 
-    def get_name(self) -> str:
+    def get_name(self):
         return self.tags[1]
 
     def expand(self):
         return self.cd.decls.expand(self.get_name())
 
-    def get_size(self) -> int:
+    def get_size(self):
         return self.expand().get_size()
 
     def is_named_type(self) -> bool:
@@ -328,14 +325,14 @@ class CTypNamed(CTypBase):
     def get_opaque_type(self):
         return self.expand().get_opaque_type()
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self):
         return {
             "base": "named",
             "name": self.get_name(),
             "expand": self.expand().to_dict(),
         }
 
-    def __str__(self) -> str:
+    def __str__(self):
         return self.get_name() + str(self.get_attributes_string())
 
 
@@ -358,7 +355,7 @@ class CTypComp(CTypBase):
     ) -> None:
         CTypBase.__init__(self, cd, index, tags, args)
 
-    def get_ckey(self) -> int:
+    def get_ckey(self):
         return self.args[0]
 
     def get_struct(self):
@@ -370,7 +367,7 @@ class CTypComp(CTypBase):
     def is_struct(self):
         return self.cd.decls.is_struct(self.get_ckey())
 
-    def get_size(self) -> int:
+    def get_size(self):
         return self.get_struct().get_size()
 
     def is_comp(self) -> bool:
@@ -593,7 +590,7 @@ class CTypFun(CTypBase):
     def get_return_type(self):
         return self.get_typ(self.args[0])
 
-    def get_args(self) -> Optional["CFunArgs"]:
+    def get_args(self):
         return self.cd.get_funargs_opt(self.args[1])
 
     def get_size(self) -> int:
@@ -602,9 +599,9 @@ class CTypFun(CTypBase):
     def is_function(self) -> bool:
         return True
 
-    def get_opaque_type(self) -> CTypBase:
+    def get_opaque_type(self):
         tags = ["tvoid"]
-        args: List[int] = []
+        args = []
         return self.cd.get_typ(self.cd.mk_typ(tags, args))
 
     def is_default_function_prototype(self):
@@ -620,7 +617,7 @@ class CTypFun(CTypBase):
     def is_vararg(self) -> bool:
         return self.args[2] == 1
 
-    def strip_attributes(self) -> CTypBase:
+    def strip_attributes(self):
         rtype = self.get_return_type().strip_attributes()
         if rtype.index != self.get_return_type().index:
             newargs = self.args[:]

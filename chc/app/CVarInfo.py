@@ -25,12 +25,7 @@
 # SOFTWARE.
 # ------------------------------------------------------------------------------
 
-from typing import List, TYPE_CHECKING
-
 import chc.app.CDictionaryRecord as CD
-
-if TYPE_CHECKING:
-    import chc.app.CDictionary
 
 
 class CVarInfo(CD.CDeclarationsRecord):
@@ -52,14 +47,8 @@ class CVarInfo(CD.CDeclarationsRecord):
         8: vinit        (optional)
     """
 
-    def __init__(
-        self,
-        cd: "chc.app.CDictionary.CDictionary",
-        index: int,
-        tags: List[str],
-        args: List[int],
-    ) -> None:
-        CD.CDeclarationsRecord.__init__(self, cd, index, tags, args)
+    def __init__(self, cdecls, index, tags, args):
+        CD.CDeclarationsRecord.__init__(self, cdecls, index, tags, args)
         self.vname = tags[0]
         self.vtype = self.get_dictionary().get_typ(args[1])
         self.vglob = args[3] == 1
@@ -97,7 +86,7 @@ class CVarInfo(CD.CDeclarationsRecord):
     def get_line(self):
         return self.vdecl.get_line()
 
-    def __str__(self) -> str:
+    def __str__(self):
         return (
             self.vname
             + ":"
