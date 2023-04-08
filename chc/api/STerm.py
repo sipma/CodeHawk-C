@@ -25,14 +25,10 @@
 # SOFTWARE.
 # ------------------------------------------------------------------------------
 
-from typing import List, Optional, TYPE_CHECKING
 import xml.etree.ElementTree as ET
 
-import chc.app.CDictionaryRecord as CD
 import chc.util.fileutil as UF
-
-if TYPE_CHECKING:
-    import chc.app.CDictionary
+import chc.app.CDictionaryRecord as CD
 
 printops = {
     "plus": "+",
@@ -45,7 +41,7 @@ printops = {
 }
 
 
-def get_printop(s: str) -> str:
+def get_printop(s):
     if s in printops:
         return printops[s]
     else:
@@ -53,65 +49,47 @@ def get_printop(s: str) -> str:
 
 
 class SOffset(CD.CDictionaryRecord):
-    def __init__(
-        self,
-        cd: "chc.app.CDictionary.CDictionary",
-        index: int,
-        tags: List[str],
-        args: List[int],
-    ) -> None:
+    def __init__(self, cd, index, tags, args):
         CD.CDictionaryRecord.__init__(self, cd, index, tags, args)
 
-    def is_nooffset(self) -> bool:
+    def is_nooffset(self):
         return False
 
-    def is_field_offset(self) -> bool:
+    def is_field_offset(self):
         return False
 
-    def is_index_offset(self) -> bool:
+    def is_index_offset(self):
         return False
 
-    def __str__(self) -> str:
+    def __str__(self):
         return "s-offset-" + self.tags[0]
 
 
 class STArgNoOffset(SOffset):
-    def __init__(
-        self,
-        cd: "chc.app.CDictionary.CDictionary",
-        index: int,
-        tags: List[str],
-        args: List[int],
-    ) -> None:
+    def __init__(self, cd, index, tags, args):
         SOffset.__init__(self, cd, index, tags, args)
 
-    def is_nooffset(self) -> bool:
+    def is_nooffset(self):
         return True
 
     def get_mathml_node(self, signature):
         return None
 
-    def __str__(self) -> str:
+    def __str__(self):
         return ""
 
 
 class STArgFieldOffset(SOffset):
-    def __init__(
-        self,
-        cd: "chc.app.CDictionary.CDictionary",
-        index: int,
-        tags: List[str],
-        args: List[int],
-    ) -> None:
+    def __init__(self, cd, index, tags, args):
         SOffset.__init__(self, cd, index, tags, args)
 
-    def get_field(self) -> str:
+    def get_field(self):
         return self.tags[1]
 
     def get_offset(self):
         return self.cd.get_s_offset(int(self.args[0]))
 
-    def is_field_offset(self) -> bool:
+    def is_field_offset(self):
         return True
 
     def get_mathml_node(self, signature):
@@ -122,27 +100,21 @@ class STArgFieldOffset(SOffset):
             fnode.append(offnode)
         return fnode
 
-    def __str__(self) -> str:
+    def __str__(self):
         return "." + self.get_field() + str(self.get_offset())
 
 
 class STArgIndexOffset(SOffset):
-    def __init__(
-        self,
-        cd: "chc.app.CDictionary.CDictionary",
-        index: int,
-        tags: List[str],
-        args: List[int],
-    ) -> None:
+    def __init__(self, cd, index, tags, args):
         SOffset.__init__(self, cd, index, tags, args)
 
-    def get_index(self) -> int:
+    def get_index(self):
         return int(self.tags[1])
 
     def get_offset(self):
         return self.cd.get_s_offset(int(self.args[0]))
 
-    def is_index_offset(self) -> bool:
+    def is_index_offset(self):
         return True
 
     def get_mathml_node(self, signature):
@@ -153,80 +125,68 @@ class STArgIndexOffset(SOffset):
             inode.append(offnode)
         return inode
 
-    def __str__(self) -> str:
+    def __str__(self):
         return "[" + str(self.get_index()) + "]" + str(self.get_offset())
 
 
 class STerm(CD.CDictionaryRecord):
-    def __init__(
-        self,
-        cd: "chc.app.CDictionary.CDictionary",
-        index: int,
-        tags: List[str],
-        args: List[int],
-    ) -> None:
+    def __init__(self, cd, index, tags, args):
         CD.CDictionaryRecord.__init__(self, cd, index, tags, args)
 
     def get_iterm(self, argix):
         return self.cd.get_s_term(int(self.args[argix]))
 
-    def is_arg_value(self) -> bool:
+    def is_arg_value(self):
         return False
 
-    def is_return_value(self) -> bool:
+    def is_return_value(self):
         return False
 
-    def is_named_constant(self) -> bool:
+    def is_named_constant(self):
         return False
 
-    def is_num_constant(self) -> bool:
+    def is_num_constant(self):
         return False
 
-    def is_index_size(self) -> bool:
+    def is_index_size(self):
         return False
 
-    def is_byte_size(self) -> bool:
+    def is_byte_size(self):
         return False
 
-    def is_field_offset(self) -> bool:
+    def is_field_offset(self):
         return False
 
-    def is_arg_addressed_value(self) -> bool:
+    def is_arg_addressed_value(self):
         return False
 
-    def is_arg_null_terminator_pos(self) -> bool:
+    def is_arg_null_terminator_pos(self):
         return False
 
-    def is_arg_size_of_type(self) -> bool:
+    def is_arg_size_of_type(self):
         return False
 
-    def is_arithmetic_expr(self) -> bool:
+    def is_arithmetic_expr(self):
         return False
 
-    def is_formatted_output_size(self) -> bool:
+    def is_formatted_output_size(self):
         return False
 
-    def is_runtime_value(self) -> bool:
+    def is_runtime_value(self):
         return False
 
     def get_mathml_node(self, signature):
         return ET.Element("s-term")
 
-    def pretty(self) -> str:
+    def pretty(self):
         return self.__str__()
 
-    def __str__(self) -> str:
+    def __str__(self):
         return "s-term-" + self.tags[0]
 
 
 class STArgValue(STerm):
-    def __init__(
-        self,
-        cd: "chc.app.CDictionary.CDictionary",
-        index: int,
-        tags: List[str],
-        args: List[int],
-    ) -> None:
+    def __init__(self, cd, index, tags, args):
         STerm.__init__(self, cd, index, tags, args)
 
     def get_parameter(self):
@@ -235,7 +195,7 @@ class STArgValue(STerm):
     def get_offset(self):
         return self.cd.get_s_offset(int(self.args[1]))
 
-    def is_arg_value(self) -> bool:
+    def is_arg_value(self):
         return True
 
     def get_mathml_node(self, signature):
@@ -243,44 +203,32 @@ class STArgValue(STerm):
         node.text = signature[self.args[0]]
         return node
 
-    def __str__(self) -> str:
+    def __str__(self):
         return "arg-val(" + str(self.get_parameter()) + ")"
 
 
 class STReturnValue(STerm):
-    def __init__(
-        self,
-        cd: "chc.app.CDictionary.CDictionary",
-        index: int,
-        tags: List[str],
-        args: List[int],
-    ) -> None:
+    def __init__(self, cd, index, tags, args):
         STerm.__init__(self, cd, index, tags, args)
 
-    def is_return_value(self) -> bool:
+    def is_return_value(self):
         return True
 
     def get_mathml_node(self, signature):
         return ET.Element("return")
 
-    def __str__(self) -> str:
+    def __str__(self):
         return "returnval"
 
 
 class STNamedConstant(STerm):
-    def __init__(
-        self,
-        cd: "chc.app.CDictionary.CDictionary",
-        index: int,
-        tags: List[str],
-        args: List[int],
-    ) -> None:
+    def __init__(self, cd, index, tags, args):
         STerm.__init__(self, cd, index, tags, args)
 
-    def get_name(self) -> str:
+    def get_name(self):
         return self.tags[1]
 
-    def is_named_constant(self) -> bool:
+    def is_named_constant(self):
         return True
 
     def get_mathml_node(self, signature):
@@ -288,27 +236,21 @@ class STNamedConstant(STerm):
         node.text = self.get_name()
         return node
 
-    def __str__(self) -> str:
+    def __str__(self):
         return "named-constant(" + self.get_name() + ")"
 
 
 class STNumConstant(STerm):
-    def __init__(
-        self,
-        cd: "chc.app.CDictionary.CDictionary",
-        index: int,
-        tags: List[str],
-        args: List[int],
-    ) -> None:
+    def __init__(self, cd, index, tags, args):
         STerm.__init__(self, cd, index, tags, args)
 
-    def get_constant(self) -> int:
+    def get_constant(self):
         try:
             return int(self.tags[1])
         except ValueError as e:
             raise UF.CHCError(str(e))
 
-    def is_num_constant(self) -> bool:
+    def is_num_constant(self):
         return True
 
     def get_mathml_node(self, signature):
@@ -316,27 +258,21 @@ class STNumConstant(STerm):
         node.text = str(self.get_constant())
         return node
 
-    def pretty(self) -> str:
+    def pretty(self):
         return str(self.get_constant())
 
-    def __str__(self) -> str:
+    def __str__(self):
         return "num-constant(" + str(self.get_constant()) + ")"
 
 
 class STIndexSize(STerm):
-    def __init__(
-        self,
-        cd: "chc.app.CDictionary.CDictionary",
-        index: int,
-        tags: List[str],
-        args: List[int],
-    ) -> None:
+    def __init__(self, cd, index, tags, args):
         STerm.__init__(self, cd, index, tags, args)
 
     def get_term(self):
         return self.get_iterm(0)
 
-    def is_index_size(self) -> bool:
+    def is_index_size(self):
         return True
 
     def get_mathml_node(self, signature):
@@ -346,24 +282,18 @@ class STIndexSize(STerm):
         anode.extend([opnode, tnode])
         return anode
 
-    def __str__(self) -> str:
+    def __str__(self):
         return "index-size(" + str(self.get_term()) + ")"
 
 
 class STByteSize(STerm):
-    def __init__(
-        self,
-        cd: "chc.app.CDictionary.CDictionary",
-        index: int,
-        tags: List[str],
-        args: List[int],
-    ) -> None:
+    def __init__(self, cd, index, tags, args):
         STerm.__init__(self, cd, index, tags, args)
 
     def get_term(self):
         return self.get_iterm(0)
 
-    def is_byte_size(self) -> bool:
+    def is_byte_size(self):
         return True
 
     def get_mathml_node(self, signature):
@@ -373,24 +303,18 @@ class STByteSize(STerm):
         anode.extend([opnode, tnode])
         return anode
 
-    def __str__(self) -> str:
+    def __str__(self):
         return "byte-size(" + str(self.get_term()) + ")"
 
 
 class STFieldOffset(STerm):
-    def __init__(
-        self,
-        cd: "chc.app.CDictionary.CDictionary",
-        index: int,
-        tags: List[str],
-        args: List[int],
-    ) -> None:
+    def __init__(self, cd, index, tags, args):
         STerm.__init__(self, cd, index, tags, args)
 
-    def get_name(self) -> str:
+    def get_name(self):
         return self.tags[1]
 
-    def is_field_offset(self) -> bool:
+    def is_field_offset(self):
         return True
 
     def get_mathml_node(self, signature):
@@ -398,18 +322,12 @@ class STFieldOffset(STerm):
         node.set("fname", self.get_name())
         return node
 
-    def __str__(self) -> str:
+    def __str__(self):
         return "field-offset(" + str(self.get_name()) + ")"
 
 
 class STArgAddressedValue(STerm):
-    def __init__(
-        self,
-        cd: "chc.app.CDictionary.CDictionary",
-        index: int,
-        tags: List[str],
-        args: List[int],
-    ) -> None:
+    def __init__(self, cd, index, tags, args):
         STerm.__init__(self, cd, index, tags, args)
 
     def get_base_term(self):
@@ -418,7 +336,7 @@ class STArgAddressedValue(STerm):
     def get_offset(self):
         return self.cd.get_s_offset(int(self.args[1]))
 
-    def is_arg_addressed_value(self) -> bool:
+    def is_arg_addressed_value(self):
         return True
 
     def get_mathml_node(self, signature):
@@ -431,7 +349,7 @@ class STArgAddressedValue(STerm):
         anode.extend([opnode, t1node])
         return anode
 
-    def __str__(self) -> str:
+    def __str__(self):
         return (
             "addressed-value("
             + str(self.get_base_term())
@@ -441,19 +359,13 @@ class STArgAddressedValue(STerm):
 
 
 class STArgNullTerminatorPos(STerm):
-    def __init__(
-        self,
-        cd: "chc.app.CDictionary.CDictionary",
-        index: int,
-        tags: List[str],
-        args: List[int],
-    ) -> None:
+    def __init__(self, cd, index, tags, args):
         STerm.__init__(self, cd, index, tags, args)
 
     def get_term(self):
         return self.get_iterm(0)
 
-    def is_arg_null_terminator_pos(self) -> bool:
+    def is_arg_null_terminator_pos(self):
         return True
 
     def get_mathml_node(self, signature):
@@ -463,24 +375,18 @@ class STArgNullTerminatorPos(STerm):
         anode.extend([opnode, tnode])
         return anode
 
-    def __str__(self) -> str:
+    def __str__(self):
         return "arg-null-terminator-pos(" + str(self.get_term()) + ")"
 
 
 class STArgSizeOfType(STerm):
-    def __init__(
-        self,
-        cd: "chc.app.CDictionary.CDictionary",
-        index: int,
-        tags: List[str],
-        args: List[int],
-    ) -> None:
+    def __init__(self, cd, index, tags, args):
         STerm.__init__(self, cd, index, tags, args)
 
     def get_term(self):
         return self.get_iterm(0)
 
-    def is_arg_size_of_type(self) -> bool:
+    def is_arg_size_of_type(self):
         return True
 
     def get_mathml_node(self, signature):
@@ -495,16 +401,10 @@ class STArgSizeOfType(STerm):
 
 
 class STArithmeticExpr(STerm):
-    def __init__(
-        self,
-        cd: "chc.app.CDictionary.CDictionary",
-        index: int,
-        tags: List[str],
-        args: List[int],
-    ) -> None:
+    def __init__(self, cd, index, tags, args):
         STerm.__init__(self, cd, index, tags, args)
 
-    def get_op(self) -> str:
+    def get_op(self):
         return self.tags[1]
 
     def get_term1(self):
@@ -513,7 +413,7 @@ class STArithmeticExpr(STerm):
     def get_term2(self):
         return self.get_iterm(1)
 
-    def is_arithmetic_expr(self) -> bool:
+    def is_arithmetic_expr(self):
         return True
 
     def get_mathml_node(self, signature):
@@ -524,7 +424,7 @@ class STArithmeticExpr(STerm):
         anode.extend([opnode, t1node, t2node])
         return anode
 
-    def pretty(self) -> str:
+    def pretty(self):
         return (
             "("
             + self.get_term1().pretty()
@@ -535,7 +435,7 @@ class STArithmeticExpr(STerm):
             + ")"
         )
 
-    def __str__(self) -> str:
+    def __str__(self):
         return (
             "xpr("
             + str(self.get_term1())
@@ -548,19 +448,13 @@ class STArithmeticExpr(STerm):
 
 
 class STFormattedOutputSize(STerm):
-    def __init__(
-        self,
-        cd: "chc.app.CDictionary.CDictionary",
-        index: int,
-        tags: List[str],
-        args: List[int],
-    ) -> None:
+    def __init__(self, cd, index, tags, args):
         STerm.__init__(self, cd, index, tags, args)
 
     def get_term(self):
         return self.get_iterm(0)
 
-    def is_formatted_output_size(self) -> bool:
+    def is_formatted_output_size(self):
         return True
 
     def get_mathml_node(self, signature):
@@ -570,25 +464,19 @@ class STFormattedOutputSize(STerm):
         anode.extend([opnode, tnode])
         return anode
 
-    def __str__(self) -> str:
+    def __str__(self):
         return "formatted-output-size(" + str(self.get_term()) + ")"
 
 
 class STRuntimeValue(STerm):
-    def __init__(
-        self,
-        cd: "chc.app.CDictionary.CDictionary",
-        index: int,
-        tags: List[str],
-        args: List[int],
-    ) -> None:
+    def __init__(self, cd, index, tags, args):
         STerm.__init__(self, cd, index, tags, args)
 
-    def is_runtime_value(self) -> bool:
+    def is_runtime_value(self):
         return True
 
     def get_mathml_node(self, signature):
         return ET.Element("runtime-value")
 
-    def __str__(self) -> str:
+    def __str__(self):
         return "runtime-value"
