@@ -282,7 +282,7 @@ class ParseManager(object):
                 if not os.path.isdir(tgtcdir):
                     os.makedirs(tgtcdir)
                 os.chdir(self.cpath)
-                if os.path.normpath(cfilename) != os.path.normpath(tgtcfilename):
+                if cfilename != tgtcfilename:
                     shutil.copy(cfilename, tgtcfilename)
                     shutil.copy(ifilename, tgtifilename)
             return (cfilename, ifilename)
