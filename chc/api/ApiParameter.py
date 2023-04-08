@@ -27,21 +27,21 @@
 
 from typing import List, TYPE_CHECKING
 
-from chc.api.InterfaceDictionaryRecord import InterfaceDictionaryRecord
+import chc.app.CDictionaryRecord as CD
 
 if TYPE_CHECKING:
-    from chc.api.InterfaceDictionary import InterfaceDictionary
+    import chc.app.CDictionary
 
 
-class ApiParameter(InterfaceDictionaryRecord):
+class ApiParameter(CD.CDictionaryRecord):
     def __init__(
         self,
-        cd: "InterfaceDictionary",
+        cd: "chc.app.CDictionary.CDictionary",
         index: int,
         tags: List[str],
         args: List[int],
     ) -> None:
-        InterfaceDictionaryRecord.__init__(self, cd, index, tags, args)
+        CD.CDictionaryRecord.__init__(self, cd, index, tags, args)
 
     def is_formal(self) -> bool:
         return False
@@ -56,7 +56,7 @@ class ApiParameter(InterfaceDictionaryRecord):
 class APFormal(ApiParameter):
     def __init__(
         self,
-        cd: "InterfaceDictionary",
+        cd: "chc.app.CDictionary.CDictionary",
         index: int,
         tags: List[str],
         args: List[int],
@@ -76,7 +76,7 @@ class APFormal(ApiParameter):
 class APGlobal(ApiParameter):
     def __init__(
         self,
-        cd: "InterfaceDictionary",
+        cd: "chc.app.CDictionary.CDictionary",
         index: int,
         tags: List[str],
         args: List[int],

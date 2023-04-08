@@ -33,7 +33,6 @@ import chc.util.fileutil as UF
 
 if TYPE_CHECKING:
     from chc.api.InterfaceDictionary import InterfaceDictionary
-    from chc.api.ApiParameter import ApiParameter
 
 printops = {
     "plus": "+",
@@ -72,9 +71,6 @@ class SOffset(InterfaceDictionaryRecord):
     def is_index_offset(self) -> bool:
         return False
 
-    def get_mathml_node(self, signature: List[str]) -> Optional[ET.Element]:
-        raise Exception("Should be implemented by a subclass")
-
     def __str__(self) -> str:
         return "s-offset-" + self.tags[0]
 
@@ -92,7 +88,7 @@ class STArgNoOffset(SOffset):
     def is_nooffset(self) -> bool:
         return True
 
-    def get_mathml_node(self, signature: List[str]) -> Optional[ET.Element]:
+    def get_mathml_node(self, signature):
         return None
 
     def __str__(self) -> str:
@@ -112,16 +108,16 @@ class STArgFieldOffset(SOffset):
     def get_field(self) -> str:
         return self.tags[1]
 
-    def get_offset(self) -> SOffset:
+    def get_offset(self):
         return self.cd.get_s_offset(int(self.args[0]))
 
     def is_field_offset(self) -> bool:
         return True
 
-    def get_mathml_node(self, signature: List[str]) -> Optional[ET.Element]:
+    def get_mathml_node(self, signature):
         fnode = ET.Element("field")
         fnode.set("name", self.get_field())
-        offnode = self.get_offset().get_mathml_node(signature)
+        offnode = self.get_offset().get_mathml_node()
         if offnode is not None:
             fnode.append(offnode)
         return fnode
@@ -143,16 +139,16 @@ class STArgIndexOffset(SOffset):
     def get_index(self) -> int:
         return int(self.tags[1])
 
-    def get_offset(self) -> SOffset:
+    def get_offset(self):
         return self.cd.get_s_offset(int(self.args[0]))
 
     def is_index_offset(self) -> bool:
         return True
 
-    def get_mathml_node(self, signature: List[str]) -> Optional[ET.Element]:
+    def get_mathml_node(self, signature):
         inode = ET.Element("index")
         inode.set("i", str(self.get_index()))
-        offnode = self.get_offset().get_mathml_node(signature)
+        offnode = self.get_offset().get_mathml_node()
         if offnode is not None:
             inode.append(offnode)
         return inode
@@ -171,7 +167,7 @@ class STerm(InterfaceDictionaryRecord):
     ) -> None:
         InterfaceDictionaryRecord.__init__(self, cd, index, tags, args)
 
-    def get_iterm(self, argix: int) -> "STerm":
+    def get_iterm(self, argix):
         return self.cd.get_s_term(int(self.args[argix]))
 
     def is_arg_value(self) -> bool:
@@ -213,7 +209,7 @@ class STerm(InterfaceDictionaryRecord):
     def is_runtime_value(self) -> bool:
         return False
 
-    def get_mathml_node(self, signature: List[str]) -> ET.Element:
+    def get_mathml_node(self, signature):
         return ET.Element("s-term")
 
     def pretty(self) -> str:
@@ -233,16 +229,16 @@ class STArgValue(STerm):
     ) -> None:
         STerm.__init__(self, cd, index, tags, args)
 
-    def get_parameter(self) -> "ApiParameter":
+    def get_parameter(self):
         return self.cd.get_api_parameter(int(self.args[0]))
 
-    def get_offset(self) -> SOffset:
+    def get_offset(self):
         return self.cd.get_s_offset(int(self.args[1]))
 
     def is_arg_value(self) -> bool:
         return True
 
-    def get_mathml_node(self, signature: List[str]) -> ET.Element:
+    def get_mathml_node(self, signature):
         node = ET.Element("ci")
         node.text = signature[self.args[0]]
         return node
@@ -264,7 +260,7 @@ class STReturnValue(STerm):
     def is_return_value(self) -> bool:
         return True
 
-    def get_mathml_node(self, signature: List[str]) -> ET.Element:
+    def get_mathml_node(self, signature):
         return ET.Element("return")
 
     def __str__(self) -> str:
@@ -287,7 +283,7 @@ class STNamedConstant(STerm):
     def is_named_constant(self) -> bool:
         return True
 
-    def get_mathml_node(self, signature: List[str]) -> ET.Element:
+    def get_mathml_node(self, signature):
         node = ET.Element("ci")
         node.text = self.get_name()
         return node
@@ -315,7 +311,7 @@ class STNumConstant(STerm):
     def is_num_constant(self) -> bool:
         return True
 
-    def get_mathml_node(self, signature: List[str]) -> ET.Element:
+    def get_mathml_node(self, signature):
         node = ET.Element("cn")
         node.text = str(self.get_constant())
         return node
@@ -337,16 +333,16 @@ class STIndexSize(STerm):
     ) -> None:
         STerm.__init__(self, cd, index, tags, args)
 
-    def get_term(self) -> STerm:
+    def get_term(self):
         return self.get_iterm(0)
 
     def is_index_size(self) -> bool:
         return True
 
-    def get_mathml_node(self, signature: List[str]) -> ET.Element:
+    def get_mathml_node(self, signature):
         anode = ET.Element("apply")
         opnode = ET.Element("index-size")
-        tnode = self.get_term().get_mathml_node(signature)
+        tnode = self.get_term.get_mathml_node(signature)
         anode.extend([opnode, tnode])
         return anode
 
@@ -364,16 +360,16 @@ class STByteSize(STerm):
     ) -> None:
         STerm.__init__(self, cd, index, tags, args)
 
-    def get_term(self) -> STerm:
+    def get_term(self):
         return self.get_iterm(0)
 
     def is_byte_size(self) -> bool:
         return True
 
-    def get_mathml_node(self, signature: List[str]) -> ET.Element:
+    def get_mathml_node(self, signature):
         anode = ET.Element("apply")
         opnode = ET.Element("byte-size")
-        tnode = self.get_term().get_mathml_node(signature)
+        tnode = self.get_term.get_mathml_node(signature)
         anode.extend([opnode, tnode])
         return anode
 
@@ -397,7 +393,7 @@ class STFieldOffset(STerm):
     def is_field_offset(self) -> bool:
         return True
 
-    def get_mathml_node(self, signature: List[str]) -> ET.Element:
+    def get_mathml_node(self, signature):
         node = ET.Element("field")
         node.set("fname", self.get_name())
         return node
@@ -416,16 +412,16 @@ class STArgAddressedValue(STerm):
     ) -> None:
         STerm.__init__(self, cd, index, tags, args)
 
-    def get_base_term(self) -> STerm:
+    def get_base_term(self):
         return self.get_iterm(0)
 
-    def get_offset(self) -> SOffset:
+    def get_offset(self):
         return self.cd.get_s_offset(int(self.args[1]))
 
     def is_arg_addressed_value(self) -> bool:
         return True
 
-    def get_mathml_node(self, signature: List[str]) -> ET.Element:
+    def get_mathml_node(self, signature):
         anode = ET.Element("apply")
         opnode = ET.Element("addressed-value")
         t1node = self.get_base_term().get_mathml_node(signature)
@@ -454,13 +450,13 @@ class STArgNullTerminatorPos(STerm):
     ) -> None:
         STerm.__init__(self, cd, index, tags, args)
 
-    def get_term(self) -> STerm:
+    def get_term(self):
         return self.get_iterm(0)
 
     def is_arg_null_terminator_pos(self) -> bool:
         return True
 
-    def get_mathml_node(self, signature: List[str]) -> ET.Element:
+    def get_mathml_node(self, signature):
         anode = ET.Element("apply")
         opnode = ET.Element("nullterminator-pos")
         tnode = self.get_term().get_mathml_node(signature)
@@ -481,20 +477,20 @@ class STArgSizeOfType(STerm):
     ) -> None:
         STerm.__init__(self, cd, index, tags, args)
 
-    def get_term(self) -> STerm:
+    def get_term(self):
         return self.get_iterm(0)
 
     def is_arg_size_of_type(self) -> bool:
         return True
 
-    def get_mathml_node(self, signature: List[str]) -> ET.Element:
+    def get_mathml_node(self, signature):
         anode = ET.Element("apply")
         opnode = ET.Element("size-of-type")
         tnode = self.get_term().get_mathml_node(signature)
         anode.extend([opnode, tnode])
         return anode
 
-    def __str__(self) -> str:
+    def __str__(self):
         return "arg-size-of-type(" + str(self.get_term()) + ")"
 
 
@@ -511,16 +507,16 @@ class STArithmeticExpr(STerm):
     def get_op(self) -> str:
         return self.tags[1]
 
-    def get_term1(self) -> STerm:
+    def get_term1(self):
         return self.get_iterm(0)
 
-    def get_term2(self) -> STerm:
+    def get_term2(self):
         return self.get_iterm(1)
 
     def is_arithmetic_expr(self) -> bool:
         return True
 
-    def get_mathml_node(self, signature: List[str]) -> ET.Element:
+    def get_mathml_node(self, signature):
         anode = ET.Element("apply")
         opnode = ET.Element(self.get_op())
         t1node = self.get_term1().get_mathml_node(signature)
@@ -561,13 +557,13 @@ class STFormattedOutputSize(STerm):
     ) -> None:
         STerm.__init__(self, cd, index, tags, args)
 
-    def get_term(self) -> STerm:
+    def get_term(self):
         return self.get_iterm(0)
 
     def is_formatted_output_size(self) -> bool:
         return True
 
-    def get_mathml_node(self, signature: List[str]) -> ET.Element:
+    def get_mathml_node(self, signature):
         anode = ET.Element("apply")
         opnode = ET.Element("formatted-output-size")
         tnode = self.get_term().get_mathml_node(signature)
@@ -591,7 +587,7 @@ class STRuntimeValue(STerm):
     def is_runtime_value(self) -> bool:
         return True
 
-    def get_mathml_node(self, signature: List[str]) -> ET.Element:
+    def get_mathml_node(self, signature):
         return ET.Element("runtime-value")
 
     def __str__(self) -> str:

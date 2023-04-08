@@ -70,7 +70,6 @@ from chc.util.IndexedTable import IndexedTable, IndexedTableSuperclass, IndexedT
 from chc.util.StringIndexedTable import StringIndexedTable
 
 if TYPE_CHECKING:
-    from chc.api.ApiParameter import APGlobal
     from chc.api.STerm import STerm, STNumConstant, STArgValue
     from chc.app.CCompInfo import CCompInfo
     from chc.app.CFileDictionary import CFileDictionary
@@ -370,7 +369,7 @@ class CDictionary(object):
         if t.is_arg_value():
             par = cast("STArgValue", t).get_parameter()
             if par.is_global():
-                gname = cast("APGlobal", par).get_name()
+                gname = par.get_name()
                 if gname in subst:
                     return self.index_exp(subst[gname])
                 else:
