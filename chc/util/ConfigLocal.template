@@ -36,9 +36,7 @@ any of that config's variables here if you want to use a value other than the de
 
 import os
 
-import chc.util.Config
-
-def getLocals(config: chc.util.Config.Config) -> None:
+def getLocals(config):
     '''Set local configuration variables here if they differ from the defaults in Config.py
     
     Example :
