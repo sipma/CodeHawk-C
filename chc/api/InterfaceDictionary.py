@@ -25,16 +25,12 @@
 # SOFTWARE.
 # ------------------------------------------------------------------------------
 
-from typing import Any, cast, Callable, Dict, List, Tuple, Optional, TYPE_CHECKING
+from typing import cast, Callable, Dict, List, Tuple, Optional, TYPE_CHECKING
 import xml.etree.ElementTree as ET
 
 import chc.util.fileutil as UF
 import chc.util.IndexedTable as IT
-from chc.util.IndexedTable import (
-    IndexedTable,
-    IndexedTableValue,
-    IndexedTableSuperclass,
-)
+from chc.util.IndexedTable import IndexedTable, IndexedTableValue, IndexedTableSuperclass
 
 import chc.api.ApiParameter as AP
 from chc.api.ApiParameter import ApiParameter, APFormal, APGlobal
@@ -44,13 +40,7 @@ from chc.api.PostRequest import PostRequest
 import chc.api.PostAssume as PA
 from chc.api.PostAssume import PostAssume
 import chc.api.STerm as ST
-from chc.api.STerm import (
-    SOffset,
-    STerm,
-    STArgNoOffset,
-    STArgFieldOffset,
-    STArgIndexOffset,
-)
+from chc.api.STerm import SOffset, STerm, STArgNoOffset, STArgFieldOffset, STArgIndexOffset
 import chc.api.XPredicate as XP
 from chc.api.XPredicate import XPredicate
 
@@ -160,12 +150,20 @@ class InterfaceDictionary(object):
         self.cfile = cfile
         self.declarations = self.cfile.declarations
         self.dictionary = self.declarations.dictionary
-        self.api_parameter_table: IndexedTable[ApiParameter] = IndexedTable("api-parameter-table")
+        self.api_parameter_table: IndexedTable[ApiParameter] = IndexedTable(
+            "api-parameter-table"
+        )
         self.s_offset_table: IndexedTable[SOffset] = IndexedTable("s-offset-table")
         self.s_term_table: IndexedTable[STerm] = IndexedTable("s-term-table")
-        self.xpredicate_table: IndexedTable[XPredicate] = IndexedTable("xpredicate-table")
-        self.postrequest_table: IndexedTable[PostRequest] = IndexedTable("postrequest-table")
-        self.postassume_table: IndexedTable[PostAssume] = IndexedTable("postassume-table")
+        self.xpredicate_table: IndexedTable[XPredicate] = IndexedTable(
+            "xpredicate-table"
+        )
+        self.postrequest_table: IndexedTable[PostRequest] = IndexedTable(
+            "postrequest-table"
+        )
+        self.postassume_table: IndexedTable[PostAssume] = IndexedTable(
+            "postassume-table"
+        )
         self.ds_condition_table: IndexedTable[IndexedTableValue] = IndexedTable(
             "ds-condition-table"
         )
@@ -246,7 +244,7 @@ class InterfaceDictionary(object):
                 return STArgIndexOffset(self, index, t.tags, t.args)
 
             return self.s_offset_table.add(IT.get_key(t.tags, t.args), f_indexoffset)
-        raise Exception('Unknown variant of SOffset: "' + str(t) + '"')
+        raise Exception("Unknown variant of SOffset: \"" + str(t) + "\"")
 
     def mk_s_offset(self, tags: List[str], args: List[int]) -> int:
         def f(index: int, key: object) -> SOffset:
@@ -332,10 +330,7 @@ class InterfaceDictionary(object):
             return self.s_term_table.add(IT.get_key(t.tags, args), f_sizeoftype)
         if t.is_arithmetic_expr():
             t_arith = cast(ST.STArithmeticExpr, t)
-            args = [
-                self.index_s_term(t_arith.get_term1()),
-                self.index_s_term(t_arith.get_term2()),
-            ]
+            args = [self.index_s_term(t_arith.get_term1()), self.index_s_term(t_arith.get_term2())]
 
             def f_arithmeticexpr(index: int, key: object) -> ST.STArithmeticExpr:
                 return ST.STArithmeticExpr(self, index, t.tags, args)
@@ -354,7 +349,7 @@ class InterfaceDictionary(object):
                 return ST.STRuntimeValue(self, index, t.tags, t.args)
 
             return self.s_term_table.add(IT.get_key(t.tags, t.args), f_runtimevalue)
-        raise Exception('Unknown STerm variant: "' + str(t) + '"')
+        raise Exception("Unknown STerm variant: \"" + str(t) + "\"")
 
     def index_opt_s_term(self, t: Optional[STerm]) -> int:
         if t is None:
@@ -382,283 +377,260 @@ class InterfaceDictionary(object):
         index = self.mk_xpredicate(["i"], [self.index_s_term(t)])
         return self.get_xpredicate(index)
 
-    def index_xpredicate(self, p: XPredicate) -> int:
+    def index_xpredicate(self, p):
         if p.is_new_memory():
-            args = [self.index_s_term(cast(XP.XNewMemory, p).get_term())]
+            args = [self.index_s_term(p.get_term())]
 
-            def f_newmemory(index: int, key: object) -> XP.XNewMemory:
+            def f(index, key):
                 return XP.XNewMemory(self, index, p.tags, args)
 
-            return self.xpredicate_table.add(IT.get_key(p.tags, args), f_newmemory)
+            return self.xpredicate_table.add(IT.get_key(p.tags, args), f)
         if p.is_heap_address():
-            args = [self.index_s_term(cast(XP.XHeapAddress, p).get_term())]
+            args = [self.index_s_term(p.get_term())]
 
-            def f_heapaddress(index: int, key: object) -> XP.XHeapAddress:
+            def f(index, key):
                 return XP.XHeapAddress(self, index, p.tags, args)
 
-            return self.xpredicate_table.add(IT.get_key(p.tags, args), f_heapaddress)
+            return self.xpredicate_table.add(IT.get_key(p.tags, args), f)
         if p.is_global_address():
-            args = [self.index_s_term(cast(XP.XGlobalAddress, p).get_term())]
+            args = [self.index_s_term(p.get_term())]
 
-            def f_globaladdress(index: int, key: object) -> XP.XGlobalAddress:
+            def f(index, key):
                 return XP.XGlobalAddress(self, index, p.tags, args)
 
-            return self.xpredicate_table.add(IT.get_key(p.tags, args), f_globaladdress)
+            return self.xpredicate_table.add(IT.get_key(p.tags, args), f)
         if p.is_stack_address():
 
-            def f_stackaddress(index: int, key: object) -> XP.XStackAddress:
+            def f(index, key):
                 return XP.XStackAddress(self, index, p.tags, args)
 
-            return self.xpredicate_table.add(IT.get_key(p.tags, args), f_stackaddress)
+            return self.xpredicate_table.add(IT.get_key(p.tags, args), f)
         if p.is_allocation_base():
-            args = [self.index_s_term(cast(XP.XAllocationBase, p).get_term())]
+            args = [self.index_s_term(p.get_term())]
 
-            def f_allocationbase(index: int, key: object) -> XP.XAllocationBase:
+            def f(index, key):
                 return XP.XAllocationBase(self, index, p.tags, args)
 
-            return self.xpredicate_table.add(IT.get_key(p.tags, args), f_allocationbase)
+            return self.xpredicate_table.add(IT.get_key(p.tags, args), f)
         if p.is_block_write():
-            bw = cast(XP.XBlockWrite, p)
-            args = [
-                self.index_s_term(bw.get_term()),
-                self.index_s_term(bw.get_length()),
-            ]
+            args = [self.index_s_term(p.get_term()), self.index_s_term(p.get_length())]
 
-            def f_blockwrite(index: int, key: object) -> XP.XBlockWrite:
+            def f(index, key):
                 return XP.XBlockWrite(self, index, p.tags, args)
 
-            return self.xpredicate_table.add(IT.get_key(p.tags, args), f_blockwrite)
+            return self.xpredicate_table.add(IT.get_key(p.tags, args), f)
         if p.is_null():
-            args = [self.index_s_term(cast(XP.XNull, p).get_term())]
+            args = [self.index_s_term(p.get_term())]
 
-            def f_null(index: int, key: object) -> XP.XNull:
+            def f(index, key):
                 return XP.XNull(self, index, p.tags, args)
 
-            return self.xpredicate_table.add(IT.get_key(p.tags, args), f_null)
+            return self.xpredicate_table.add(IT.get_key(p.tags, args), f)
         if p.is_not_null():
-            args = [self.index_s_term(cast(XP.XNotNull, p).get_term())]
+            args = [self.index_s_term(p.get_term())]
 
-            def f_notnull(index: int, key: object) -> XP.XNotNull:
+            def f(index, key):
                 return XP.XNotNull(self, index, p.tags, args)
 
-            return self.xpredicate_table.add(IT.get_key(p.tags, args), f_notnull)
+            return self.xpredicate_table.add(IT.get_key(p.tags, args), f)
         if p.is_not_zero():
-            args = [self.index_s_term(cast(XP.XNotZero, p).get_term())]
+            args = [self.index_s_term(p.get_term())]
 
-            def f_notzero(index: int, key: object) -> XP.XNotZero:
+            def f(index, key):
                 return XP.XNotZero(self, index, p.tags, args)
 
-            return self.xpredicate_table.add(IT.get_key(p.tags, args), f_notzero)
+            return self.xpredicate_table.add(IT.get_key(p.tags, args), f)
         if p.is_non_negative():
-            args = [self.index_s_term(cast(XP.XNonNegative, p).get_term())]
+            args = [self.index_s_term(p.get_term())]
 
-            def f_nonnegative(index: int, key: object) -> XP.XNonNegative:
+            def f(index, key):
                 return XP.XNonNegative(self, index, p.tags, args)
 
-            return self.xpredicate_table.add(IT.get_key(p.tags, args), f_nonnegative)
+            return self.xpredicate_table.add(IT.get_key(p.tags, args), f)
         if p.is_initialized():
-            args = [self.index_s_term(cast(XP.XInitialized, p).get_term())]
+            args = [self.index_s_term(p.get_term())]
 
-            def f_initialized(index: int, key: object) -> XP.XInitialized:
+            def f(index, key):
                 return XP.XInitialized(self, index, p.tags, args)
 
-            return self.xpredicate_table.add(IT.get_key(p.tags, args), f_initialized)
+            return self.xpredicate_table.add(IT.get_key(p.tags, args), f)
         if p.is_initialized_range():
             args = [
-                self.index_s_term(cast(XP.XInitializedRange, p).get_buffer()),
-                self.index_s_term(cast(XP.XInitializedRange, p).get_length()),
+                self.index_s_term(p.get_buffer()),
+                self.index_s_term(p.get_length()),
             ]
 
-            def f_initializedrange(index: int, key: object) -> XP.XInitializedRange:
+            def f(index, key):
                 return XP.XInitializedRange(self, index, p.tags, args)
 
-            return self.xpredicate_table.add(IT.get_key(p.tags, args), f_initializedrange)
+            return self.xpredicate_table.add(IT.get_key(p.tags, args), f)
         if p.is_null_terminated():
-            args = [self.index_s_term(cast(XP.XNullTerminated, p).get_term())]
+            args = [self.index_s_term(p.get_term())]
 
-            def f_nullterminated(index: int, key: object) -> XP.XNullTerminated:
+            def f(index, key):
                 return XP.XNullTerminated(self, index, p.tags, args)
 
-            return self.xpredicate_table.add(IT.get_key(p.tags, args), f_nullterminated)
+            return self.xpredicate_table.add(IT.get_key(p.tags, args), f)
         if p.is_false():
 
-            def f_false(index: int, key: object) -> XP.XFalse:
+            def f(index, key):
                 return XP.XFalse(self, index, p.tags, p.args)
 
-            return self.xpredicate_table.add(IT.get_key(p.tags, p.args), f_false)
+            return self.xpredicate_table.add(IT.get_key(p.tags, p.args), f)
         if p.is_relational_expr():
-            re = cast(XP.XRelationalExpr, p)
-            args = [
-                self.index_s_term(re.get_term1()),
-                self.index_s_term(re.get_term2()),
-            ]
+            args = [self.index_s_term(p.get_term1()), self.index_s_term(p.get_term2())]
 
-            def f_relationalexpr(index: int, key: object) -> XP.XRelationalExpr:
+            def f(index, key):
                 return XP.XRelationalExpr(self, index, p.tags, args)
 
-            return self.xpredicate_table.add(IT.get_key(p.tags, args), f_relationalexpr)
+            return self.xpredicate_table.add(IT.get_key(p.tags, args), f)
         if p.is_preserves_all_memory():
 
-            def f_preservesallmemory(index: int, key: object) -> XP.XPreservesAllMemory:
+            def f(index, key):
                 return XP.XPreservesAllMemory(self, index, p.tags, p.args)
 
-            return self.xpredicate_table.add(IT.get_key(p.tags, p.args), f_preservesallmemory)
+            return self.xpredicate_table.add(IT.get_key(p.tags, p.args), f)
         if p.is_tainted():
             args = [
-                self.index_s_term(cast(XP.XTainted, p).get_term()),
-                self.index_opt_s_term(cast(XP.XTainted, p).get_lower_bound()),
-                self.index_opt_s_term(cast(XP.XTainted, p).get_upper_bound()),
+                self.index_s_term(p.get_term()),
+                self.index_opt_s_term(p.get_lower_bound()),
+                self.index_opt_s_term(p.get_upper_bound()),
             ]
 
-            def f_tainted(index: int, key: object) -> XP.XTainted:
+            def f(index, key):
                 return XP.XTainted(self, index, p.tags, args)
 
-            return self.xpredicate_table.add(IT.get_key(p.tags, args), f_tainted)
+            return self.xpredicate_table.add(IT.get_key(p.tags, args), f)
         if p.is_buffer():
             args = [
-                self.index_s_term(cast(XP.XBuffer, p).get_buffer()),
-                self.index_s_term(cast(XP.XBuffer, p).get_length()),
+                self.index_s_term(p.get_buffer()),
+                self.index_s_term(p.get_length()),
             ]
 
-            def f_buffer(index: int, key: object) -> XP.XBuffer:
+            def f(index, key):
                 return XP.XBuffer(self, index, p.tags, args)
 
-            return self.xpredicate_table.add(IT.get_key(p.tags, args), f_buffer)
+            return self.xpredicate_table.add(IT.get_key(p.tags, args), f)
         if p.is_rev_buffer():
             args = [
-                self.index_s_term(cast(XP.XRevBuffer, p).get_buffer()),
-                self.index_s_term(cast(XP.XRevBuffer, p).get_length()),
+                self.index_s_term(p.get_buffer()),
+                self.index_s_term(p.get_length()),
             ]
 
-            def f_revbuffer(index: int, key: object) -> XP.XRevBuffer:
+            def f(index, key):
                 return XP.XRevBuffer(self, index, p.tags, args)
 
-            return self.xpredicate_table.add(IT.get_key(p.tags, args), f_revbuffer)
+            return self.xpredicate_table.add(IT.get_key(p.tags, args), f)
         if p.is_controlled_resource():
-            args = [self.index_s_term(cast(XP.XControlledResource, p).get_size())]
+            args = [self.index_s_term(p.get_size())]
 
-            def f_controlledresource(index: int, key: object) -> XP.XControlledResource:
-                return XP.XControlledResource(self, index, p.tags, args)
+            def f(index, key):
+                return XP.ControlledResource(self, index, p.tags, args)
 
-            return self.xpredicate_table.add(IT.get_key(p.tags, args), f_controlledresource)
-        raise Exception("Index xpredicate not found for " + p.tags[0])
+            return self.xpredicate_table.add(IT.get_key(p.tags, args), f)
+        print("Index xpredicate not found for " + p.tags[0])
+        exit(1)
 
-    def parse_mathml_api_parameter(
-        self, name: str, pars: Dict[str, int], gvars: List[str] = []
-    ) -> int:
+    def parse_mathml_api_parameter(self, name, pars, gvars=[]):
         if (name not in pars) and (name not in gvars):
-            raise Exception("Error in reading user data: " + name + " in file " + self.cfile.name)
+            print("Error in reading user data: " + name + " in file " + self.cfile.name)
         if name in pars:
             tags = ["pf"]
             args = [pars[name]]
 
-            def f_formal(index: int, key: object) -> AP.APFormal:
+            def f(index, key):
                 return AP.APFormal(self, index, tags, args)
 
-            return self.api_parameter_table.add(IT.get_key(tags, args), f_formal)
+            return self.api_parameter_table.add(IT.get_key(tags, args), f)
         if name in gvars:
             tags = ["pg", name]
             args = []
 
-            def f_global(index: int, key: object) -> AP.APGlobal:
+            def f(index, key):
                 return AP.APGlobal(self, index, tags, args)
 
-            return self.api_parameter_table.add(IT.get_key(tags, args), f_global)
-        raise Exception(
-            "Api parameter name " + name + " not found in parameters or global variables"
+            return self.api_parameter_table.add(IT.get_key(tags, args), f)
+        print(
+            "Api parameter name "
+            + name
+            + " not found in parameters or global variables"
         )
+        exit(1)
 
-    def parse_mathml_offset(self, tnode: Optional[ET.Element]) -> int:
+    def parse_mathml_offset(self, tnode):
         if tnode is None:
             tags = ["no"]
 
-            def f_nooffset(index: int, key: object) -> ST.STArgNoOffset:
+            def f(index, key):
                 return ST.STArgNoOffset(self, index, tags, [])
 
-            return self.s_offset_table.add(IT.get_key(tags, []), f_nooffset)
+            return self.s_offset_table.add(IT.get_key(tags, []), f)
         elif tnode.tag == "field":
             offsetnode = tnode[0] if len(tnode) > 0 else None
-            xml_name = tnode.get("name")
-            if xml_name is None:
-                raise Exception('missing attribute "name"')
-            tags = ["fo", xml_name]
+            tags = ["fo", tnode.get("name")]
             args = [self.parse_mathml_offset(offsetnode)]
 
-            def f_fieldoffset(index: int, key: object) -> ST.STArgFieldOffset:
+            def f(index, key):
                 return ST.STArgFieldOffset(self, index, tags, args)
 
-            return self.s_offset_table.add(IT.get_key(tags, args), f_fieldoffset)
+            return self.s_offset_table.add(IT.get_key(tags, args), f)
         elif tnode.tag == "index":
             offsetnode = tnode[0] if len(tnode) > 0 else None
-            xml_i = tnode.get("i")
-            if xml_i is None:
-                raise Exception('missing attribute "i"')
-            tags = ["io", xml_i]
+            tags = ["io", tnode.get("i")]
             args = [self.parse_mathml_offset(offsetnode)]
 
-            def f_argindexoffset(index: int, key: object) -> ST.STArgIndexOffset:
+            def f(index, key):
                 return ST.STArgIndexOffset(self, index, tags, args)
 
-            return self.s_offset_table.add(IT.get_key(tags, args), f_argindexoffset)
+            return self.s_offset_table.add(IT.get_key(tags, args), f)
         else:
-            raise Exception("Encountered index offset")
+            print("Encountered index offset")
+            exit(1)
 
-    def parse_mathml_term(
-        self, tnode: ET.Element, pars: Dict[str, int], gvars: List[str] = []
-    ) -> int:
+    def parse_mathml_term(self, tnode, pars, gvars=[]):
         if tnode.tag in ["return", "return-value"]:
             tags = ["rv"]
-            args: List[int] = []
+            args = []
 
-            def f_returnvalue(index: int, key: object) -> ST.STReturnValue:
+            def f(index, key):
                 return ST.STReturnValue(self, index, tags, args)
 
-            return self.s_term_table.add(IT.get_key(tags, args), f_returnvalue)
+            return self.s_term_table.add(IT.get_key(tags, args), f)
         if tnode.tag == "ci":
             if tnode.text in macroconstants:
                 tags = ["ic", macroconstants[tnode.text]]
                 args = []
 
-                def f_numconstant(index: int, key: object) -> ST.STNumConstant:
+                def f(index, key):
                     return ST.STNumConstant(self, index, tags, args)
 
-                return self.s_term_table.add(IT.get_key(tags, args), f_numconstant)
             else:
                 tags = ["av"]
-                tnode_text = tnode.text
-                if tnode_text is None:
-                    raise Exception("Expected element to have text")
                 args = [
-                    self.parse_mathml_api_parameter(tnode_text, pars, gvars=gvars),
+                    self.parse_mathml_api_parameter(tnode.text, pars, gvars=gvars),
                     self.parse_mathml_offset(None),
                 ]
 
-                def f_argvalue(index: int, key: object) -> ST.STArgValue:
+                def f(index, key):
                     return ST.STArgValue(self, index, tags, args)
 
-                return self.s_term_table.add(IT.get_key(tags, args), f_argvalue)
+            return self.s_term_table.add(IT.get_key(tags, args), f)
         if tnode.tag == "cn":
-            tnode_text = tnode.text
-            if tnode_text is None:
-                raise Exception("Expected element to have text")
-            tags = ["ic", tnode_text]
+            tags = ["ic", tnode.text]
             args = []
 
-            def f_numconstant(index: int, key: object) -> ST.STNumConstant:
+            def f(index, key):
                 return ST.STNumConstant(self, index, tags, args)
 
-            return self.s_term_table.add(IT.get_key(tags, args), f_numconstant)
+            return self.s_term_table.add(IT.get_key(tags, args), f)
         if tnode.tag == "field":
-            tnode_fname = tnode.get("fname")
-            if tnode_fname is None:
-                raise Exception('Expected attribute "fname"')
-            tags = ["fo", tnode_fname]
+            tags = ["fo", tnode.get("fname")]
             args = []
 
-            def f_fieldoffset(index: int, key: object) -> ST.STFieldOffset:
+            def f(index, key):
                 return ST.STFieldOffset(self, index, tags, args)
 
-            return self.s_term_table.add(IT.get_key(tags, args), f_fieldoffset)
+            return self.s_term_table.add(IT.get_key(tags, args), f)
         if tnode.tag == "apply":
             (op, terms) = (tnode[0].tag, tnode[1:])
             if op == "addressed-value":
@@ -669,10 +641,10 @@ class InterfaceDictionary(object):
                 ]
                 tags = ["aa"]
 
-                def f_argaddressedvalue(index: int, key: object) -> ST.STArgAddressedValue:
+                def f(index, key):
                     return ST.STArgAddressedValue(self, index, tags, args)
 
-                return self.s_term_table.add(IT.get_key(tags, args), f_argaddressedvalue)
+                return self.s_term_table.add(IT.get_key(tags, args), f)
             elif op == "divide":
                 args = [
                     self.parse_mathml_term(terms[0], pars, gvars=gvars),
@@ -680,10 +652,10 @@ class InterfaceDictionary(object):
                 ]
                 tags = ["ax", "div"]
 
-                def f_arithmeticexpr(index: int, key: object) -> ST.STArithmeticExpr:
+                def f(index, key):
                     return ST.STArithmeticExpr(self, index, tags, args)
 
-                return self.s_term_table.add(IT.get_key(tags, args), f_arithmeticexpr)
+                return self.s_term_table.add(IT.get_key(tags, args), f)
             elif op == "times":
                 args = [
                     self.parse_mathml_term(terms[0], pars, gvars=gvars),
@@ -691,10 +663,10 @@ class InterfaceDictionary(object):
                 ]
                 tags = ["ax", "mult"]
 
-                def f_arithmeticexpr(index: int, key: object) -> ST.STArithmeticExpr:
+                def f(index, key):
                     return ST.STArithmeticExpr(self, index, tags, args)
 
-                return self.s_term_table.add(IT.get_key(tags, args), f_arithmeticexpr)
+                return self.s_term_table.add(IT.get_key(tags, args), f)
             elif op == "plus":
                 args = [
                     self.parse_mathml_term(terms[0], pars, gvars=gvars),
@@ -702,10 +674,10 @@ class InterfaceDictionary(object):
                 ]
                 tags = ["ax", "plusa"]
 
-                def f_arithmeticexpr(index: int, key: object) -> ST.STArithmeticExpr:
+                def f(index, key):
                     return ST.STArithmeticExpr(self, index, tags, args)
 
-                return self.s_term_table.add(IT.get_key(tags, args), f_arithmeticexpr)
+                return self.s_term_table.add(IT.get_key(tags, args), f)
             elif op == "minus":
                 args = [
                     self.parse_mathml_term(terms[0], pars, gvars=gvars),
@@ -713,39 +685,27 @@ class InterfaceDictionary(object):
                 ]
                 tags = ["ax", "minusa"]
 
-                def f_arithmeticexpr(index: int, key: object) -> ST.STArithmeticExpr:
+                def f(index, key):
                     return ST.STArithmeticExpr(self, index, tags, args)
 
-                return self.s_term_table.add(IT.get_key(tags, args), f_arithmeticexpr)
+                return self.s_term_table.add(IT.get_key(tags, args), f)
             else:
-                raise Exception('Parse mathml s-term apply not found for "' + op + '"')
+                print("Parse mathml s-term apply not found for " + op)
+                exit(1)
         else:
-            raise Exception('Parse mathml s-term not found for "' + tnode.tag + '"')
+            print("Parse mathml s-term not found for " + tnode.tag)
+            exit(1)
 
-    def parse_mathml_xpredicate(
-        self,
-        pcnode: ET.Element,
-        pars: Dict[str, int],
-        gvars: List[str] = [],
-    ) -> int:
+    def parse_mathml_xpredicate(self, pcnode, pars, gvars=[]):
         mnode = pcnode.find("math")
-        if mnode is None:
-            raise Exception('Expected "math" child node')
         anode = mnode.find("apply")
-        if anode is None:
-            raise Exception('Expected "apply" child node')
-        anode_first = anode[0]
-        if anode_first is None:
-            raise Exception("Expected child of anode")
 
-        def pt(t: ET.Element) -> int:
+        def pt(t):
             return self.parse_mathml_term(t, pars, gvars=gvars)
 
-        def bound(t: str) -> int:
-            if t in anode_first.attrib:
-                ctxt = anode_first.get(t)
-                if ctxt is None:
-                    raise Exception('Missing attribute "' + t + '"')
+        def bound(t):
+            if t in anode[0].attrib:
+                ctxt = anode[0].get(t)
                 if ctxt in macroconstants:
                     b = int(macroconstants[ctxt])
                 else:
@@ -754,7 +714,7 @@ class InterfaceDictionary(object):
                 return self.mk_s_term(tags, [])
             return -1
 
-        (op, terms) = (anode_first.tag, anode[1:])
+        (op, terms) = (anode[0].tag, anode[1:])
         optransformer = {
             "eq": "eq",
             "neq": "ne",
@@ -768,186 +728,187 @@ class InterfaceDictionary(object):
             op = optransformer[op]
             tags = ["x", op]
 
-            def f_relationalexpr(index: int, key: object) -> XP.XRelationalExpr:
+            def f(index, key):
                 return XP.XRelationalExpr(self, index, tags, args)
 
-            return self.xpredicate_table.add(IT.get_key(tags, args), f_relationalexpr)
+            return self.xpredicate_table.add(IT.get_key(tags, args), f)
         if op == "global-address":
             args = [pt(terms[0])]
             tags = ["ga"]
 
-            def f_globaladdress(index: int, key: object) -> XP.XGlobalAddress:
+            def f(index, key):
                 return XP.XGlobalAddress(self, index, tags, args)
 
-            return self.xpredicate_table.add(IT.get_key(tags, args), f_globaladdress)
+            return self.xpredicate_table.add(IT.get_key(tags, args), f)
         if op == "heap-address":
             args = [pt(terms[0])]
             tags = ["ha"]
 
-            def f_heapaddress(index: int, key: object) -> XP.XHeapAddress:
+            def f(index, key):
                 return XP.XHeapAddress(self, index, tags, args)
 
-            return self.xpredicate_table.add(IT.get_key(tags, args), f_heapaddress)
+            return self.xpredicate_table.add(IT.get_key(tags, args), f)
         if op == "not-null":
             args = [pt(terms[0])]
             tags = ["nn"]
 
-            def f_notnull(index: int, key: object) -> XP.XNotNull:
+            def f(index, key):
                 return XP.XNotNull(self, index, tags, args)
 
-            return self.xpredicate_table.add(IT.get_key(tags, args), f_notnull)
+            return self.xpredicate_table.add(IT.get_key(tags, args), f)
         if op == "not-zero":
             args = [pt(terms[0])]
             tags = ["nz"]
 
-            def f_notzero(index: int, key: object) -> XP.XNotZero:
+            def f(index, key):
                 return XP.XNotZero(self, index, tags, args)
 
-            return self.xpredicate_table.add(IT.get_key(tags, args), f_notzero)
+            return self.xpredicate_table.add(IT.get_key(tags, args), f)
         if op == "non-negative":
             args = [pt(terms[0])]
             tags = ["nng"]
 
-            def f_nonnegative(index: int, key: object) -> XP.XNonNegative:
+            def f(index, key):
                 return XP.XNonNegative(self, index, tags, args)
 
-            return self.xpredicate_table.add(IT.get_key(tags, args), f_nonnegative)
+            return self.xpredicate_table.add(IT.get_key(tags, args), f)
         if op == "preserves-all-memory":
             args = []
             tags = ["prm"]
 
-            def f_preservesallmemory(index: int, key: object) -> XP.XPreservesAllMemory:
+            def f(index, key):
                 return XP.XPreservesAllMemory(self, index, tags, args)
 
-            return self.xpredicate_table.add(IT.get_key(tags, args), f_preservesallmemory)
+            return self.xpredicate_table.add(IT.get_key(tags, args), f)
         if op == "false":
             args = []
             tags = ["f"]
 
-            def f_false(index: int, key: object) -> XP.XFalse:
+            def f(index, key):
                 return XP.XFalse(self, index, tags, args)
 
-            return self.xpredicate_table.add(IT.get_key(tags, args), f_false)
+            return self.xpredicate_table.add(IT.get_key(tags, args), f)
         if op == "initialized":
             args = [pt(terms[0])]
             tags = ["i"]
 
-            def f_initialized(index: int, key: object) -> XP.XInitialized:
+            def f(index, key):
                 return XP.XInitialized(self, index, tags, args)
 
-            return self.xpredicate_table.add(IT.get_key(tags, args), f_initialized)
+            return self.xpredicate_table.add(IT.get_key(tags, args), f)
         if op == "tainted":
             args = [pt(terms[0]), bound("lb"), bound("ub")]
             tags = ["tt"]
 
-            def f_tainted(index: int, key: object) -> XP.XTainted:
+            def f(index, key):
                 return XP.XTainted(self, index, tags, args)
 
-            return self.xpredicate_table.add(IT.get_key(tags, args), f_tainted)
+            return self.xpredicate_table.add(IT.get_key(tags, args), f)
         if op == "allocation-base":
             args = [pt(terms[0])]
             tags = ["ab"]
 
-            def f_allocationbase(index: int, key: object) -> XP.XAllocationBase:
+            def f(index, key):
                 return XP.XAllocationBase(self, index, tags, args)
 
-            return self.xpredicate_table.add(IT.get_key(tags, args), f_allocationbase)
+            return self.xpredicate_table.add(IT.get_key(tags, args), f)
         if op == "block-write":
             args = [pt(terms[0]), pt(terms[1])]
             tags = ["bw"]
 
-            def f_blockwrite(index: int, key: object) -> XP.XBlockWrite:
+            def f(index, key):
                 return XP.XBlockWrite(self, index, tags, args)
 
-            return self.xpredicate_table.add(IT.get_key(tags, args), f_blockwrite)
+            return self.xpredicate_table.add(IT.get_key(tags, args), f)
         if op == "valid-mem":
             args = [pt(terms[0])]
             tags = ["vm"]
 
-            def f_validmem(index: int, key: object) -> XP.XValidMem:
+            def f(index, key):
                 return XP.XValidMem(self, index, tags, args)
 
-            return self.xpredicate_table.add(IT.get_key(tags, args), f_validmem)
+            return self.xpredicate_table.add(IT.get_key(tags, args), f)
         if op == "new-memory":
             args = [pt(terms[0])]
             tags = ["nm"]
 
-            def f_newmemory(index: int, key: object) -> XP.XNewMemory:
+            def f(index, key):
                 return XP.XNewMemory(self, index, tags, args)
 
-            return self.xpredicate_table.add(IT.get_key(tags, args), f_newmemory)
+            return self.xpredicate_table.add(IT.get_key(tags, args), f)
         if op == "buffer":
             args = [pt(terms[0]), pt(terms[1])]
             tags = ["b"]
 
-            def f_buffer(index: int, key: object) -> XP.XBuffer:
+            def f(index, key):
                 return XP.XBuffer(self, index, tags, args)
 
-            return self.xpredicate_table.add(IT.get_key(tags, args), f_buffer)
+            return self.xpredicate_table.add(IT.get_key(tags, args), f)
         if op == "rev-buffer":
             args = [pt(terms[0]), pt(terms[1])]
             tags = ["b"]
 
-            def f_revbuffer(index: int, key: object) -> XP.XRevBuffer:
+            def f(index, key):
                 return XP.XRevBuffer(self, index, tags, args)
 
-            return self.xpredicate_table.add(IT.get_key(tags, args), f_revbuffer)
+            return self.xpredicate_table.add(IT.get_key(tags, args), f)
         if (op == "initializes-range") or (op == "initialized-range"):
             args = [pt(terms[0]), pt(terms[1])]
             tags = ["ir"]
 
-            def f_initializedrange(index: int, key: object) -> XP.XInitializedRange:
+            def f(index, key):
                 return XP.XInitializedRange(self, index, tags, args)
 
-            return self.xpredicate_table.add(IT.get_key(tags, args), f_initializedrange)
-        raise Exception(
-            "Parse mathml xpredicate not found for " + op + " in file " + self.cfile.name
-        )
+            return self.xpredicate_table.add(IT.get_key(tags, args), f)
+        else:
+            print(
+                "Parse mathml xpredicate not found for "
+                + op
+                + " in file "
+                + self.cfile.name
+            )
+            exit(1)
 
     # ------------------------ Read/write xml services -----------------------
 
-    def read_xml_xpredicate(self, node: ET.Element, tag: str = "ipr") -> XPredicate:
-        xml_value = node.get(tag)
-        if xml_value is None:
-            raise Exception('No value for tag "' + tag + '"')
-        return self.get_xpredicate(int(xml_value))
+    def read_xml_xpredicate(self, node, tag="ipr"):
+        return self.get_xpredicate(int(node.get(tag)))
 
-    def read_xml_postcondition(self, node: ET.Element, tag: str = "ixpre") -> XPredicate:
-        xml_value = node.get(tag)
-        if xml_value is None:
-            raise Exception('No value for tag "' + tag + '"')
-        return self.get_xpredicate(int(xml_value))
+    def read_xml_postcondition(self, node, tag="ixpre"):
+        return self.get_xpredicate(int(node.get(tag)))
 
-    def write_xml_postcondition(self, node: ET.Element, pc: XPredicate, tag: str = "ixpre") -> None:
+    def write_xml_postcondition(self, node, pc, tag="ixpre"):
         return node.set(tag, str(self.index_xpredicate(pc)))
 
-    def read_xml_postrequest(self, node: ET.Element, tag: str = "iipr") -> PostRequest:
-        xml_value = node.get(tag)
-        if xml_value is None:
-            raise Exception('No value for tag "' + tag + '"')
-        return self.get_postrequest(int(xml_value))
+    def read_xml_postrequest(self, node, tag="iipr"):
+        return self.get_postrequest(int(node.get(tag)))
+
+    def read_xml_global_assumption_request(self, node, tag="ipr"):
+        return self.get_global_assumption_request(int(node.get(tag)))
 
     # ------------------- Initialize dictionary ------------------------------
 
     def initialize(self) -> None:
-        xnode = UF.get_cfile_interface_dictionary_xnode(self.cfile.capp.path, self.cfile.name)
+        xnode = UF.get_cfile_interface_dictionary_xnode(
+            self.cfile.capp.path, self.cfile.name
+        )
         if xnode is None:
             return
         for (t, f) in self.tables:
             elem = xnode.find(t.name)
             if elem is None:
-                raise Exception('Expected element "' + t.name + '"')
+                raise Exception("Expected element \"" + t.name + "\"")
             f(elem)
 
     # ----------------------- Printing ---------------------------------------
 
-    def write_xml(self, node: ET.Element) -> None:
-        def f(n: ET.Element, r: Any) -> None:
+    def write_xml(self, node):
+        def f(n, r):
             r.write_xml(n)
 
         for (t, _) in self.tables:
             tnode = ET.Element(t.name)
-            cast(IndexedTable[IndexedTableValue], t).write_xml(tnode, f)
+            t.write_xml(tnode, f)
             node.append(tnode)
 
     # --------------------- Initialization -----------------------------------
