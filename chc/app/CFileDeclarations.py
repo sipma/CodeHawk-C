@@ -25,7 +25,6 @@
 # SOFTWARE.
 # ------------------------------------------------------------------------------
 
-from typing import Any, Callable, Dict, List, NoReturn, Tuple, TYPE_CHECKING
 import xml.etree.ElementTree as ET
 
 import chc.util.fileutil as UF
@@ -53,19 +52,13 @@ from chc.app.CFieldInfo import CFieldInfo
 from chc.app.CVarInfo import CVarInfo
 from chc.app.CTypeInfo import CTypeInfo
 
-if TYPE_CHECKING:
-    from chc.app.CFile import CFile
-
-
-initinfo_constructors: Dict[
-    str, Callable[[Tuple["CDeclarations", int, List[str], List[int]]], CI.CInitInfoBase]
-] = {
+initinfo_constructors = {
     "single": lambda x: CI.CSingleInitInfo(*x),
     "compound": lambda x: CI.CCompoundInitInfo(*x),
 }
 
 
-def table_to_string(title: str, d: Dict[Any, Any], headerlen: int = 10) -> str:
+def table_to_string(title, d, headerlen=10):
     lines = []
     lines.append("\n" + title)
     for k in sorted(d):
@@ -74,51 +67,46 @@ def table_to_string(title: str, d: Dict[Any, Any], headerlen: int = 10) -> str:
 
 
 class CFilename(CD.CDeclarationsRecord):
-    def __init__(self, decls: CDeclarations, index: int, tags: List[str], args: List[int]):
+    def __init__(self, decls, index, tags, args):
         CD.CDeclarationsRecord.__init__(self, decls, index, tags, args)
 
-    def get_filename(self) -> str:
+    def get_filename(self):
         return self.tags[0]
 
-    def __str__(self) -> str:
+    def __str__(self):
         return self.get_filename()
 
 
 class CFileDeclarations(CDeclarations):
     """C File level definitions and declarations."""
 
-    def __init__(self, cfile: "CFile") -> None:
+    def __init__(self, cfile):
         self.cfile = cfile
         CDeclarations.__init__(self, CFileDictionary(self))
-        self.cfile = cfile
         # Basic types dictionary
 
         # File definitions and declarations
-        self.gtypes: Dict[Any, Any] = {}  # name -> CGType
-        self.gcomptagdefs: Dict[Any, Any] = {}  # key -> CGCompTag
-        self.gcomptagdecls: Dict[Any, Any] = {}  # key -> CGCompTag
-        self.gvardefs: Dict[Any, Any] = {}  # vid -> CGVarDef
-        self.gvardecls: Dict[Any, Any] = {}  # vid -> CGVarDecl
-        self.genumtagdefs: Dict[Any, Any] = {}  # ename -> CGEnumTag
-        self.genumtagdecls: Dict[Any, Any] = {}  # ename -> CGEnumTag
-        self.gfunctions: Dict[Any, Any] = {}  # vid -> CGFunction
+        self.gtypes = {}  # name -> CGType
+        self.gcomptagdefs = {}  # key -> CGCompTag
+        self.gcomptagdecls = {}  # key -> CGCompTag
+        self.gvardefs = {}  # vid -> CGVarDef
+        self.gvardecls = {}  # vid -> CGVarDecl
+        self.genumtagdefs = {}  # ename -> CGEnumTag
+        self.genumtagdecls = {}  # ename -> CGEnumTag
+        self.gfunctions = {}  # vid -> CGFunction
 
         # File definition dictionary
-        self.initinfo_table: IT.IndexedTable[CI.CInitInfoBase] = IT.IndexedTable("initinfo-table")
-        self.offset_init_table: IT.IndexedTable[CI.COffsetInitInfo] = IT.IndexedTable(
-            "offset-init-table"
-        )
-        self.typeinfo_table: IT.IndexedTable[CTypeInfo] = IT.IndexedTable("typeinfo-table")
-        self.varinfo_table: IT.IndexedTable[CVarInfo] = IT.IndexedTable("varinfo-table")
-        self.fieldinfo_table: IT.IndexedTable[CFieldInfo] = IT.IndexedTable("fieldinfo-table")
-        self.compinfo_table: IT.IndexedTable[CCompInfo] = IT.IndexedTable("compinfo-table")
-        self.enumitem_table: IT.IndexedTable[CEnumItem] = IT.IndexedTable("enumitem-table")
-        self.enuminfo_table: IT.IndexedTable[CEnumInfo] = IT.IndexedTable("enuminfo-table")
-        self.location_table: IT.IndexedTable[CLocation] = IT.IndexedTable("location-table")
+        self.initinfo_table = IT.IndexedTable("initinfo-table")
+        self.offset_init_table = IT.IndexedTable("offset-init-table")
+        self.typeinfo_table = IT.IndexedTable("typeinfo-table")
+        self.varinfo_table = IT.IndexedTable("varinfo-table")
+        self.fieldinfo_table = IT.IndexedTable("fieldinfo-table")
+        self.compinfo_table = IT.IndexedTable("compinfo-table")
+        self.enumitem_table = IT.IndexedTable("enumitem-table")
+        self.enuminfo_table = IT.IndexedTable("enuminfo-table")
+        self.location_table = IT.IndexedTable("location-table")
         self.filename_table = SI.StringIndexedTable("filename-table")
-        self.dictionary_tables: List[
-            Tuple[IT.IndexedTableSuperclass, Callable[[ET.Element], None]]
-        ] = [
+        self.dictionary_tables = [
             (self.location_table, self._read_xml_location_table),
             (self.initinfo_table, self._read_xml_initinfo_table),
             (self.offset_init_table, self._read_xml_offset_init_table),
@@ -129,9 +117,7 @@ class CFileDeclarations(CDeclarations):
             (self.enumitem_table, self._read_xml_enumitem_table),
             (self.enuminfo_table, self._read_xml_enuminfo_table),
         ]
-        self.string_tables: List[Tuple[IT.IndexedTableSuperclass, Callable[[ET.Element], None]]] = [
-            (self.filename_table, self._read_xml_filename_table)
-        ]
+        self.string_tables = [(self.filename_table, self._read_xml_filename_table)]
         self.initialize()
         # for (key,g) in self.gcomptagdefs.items() + self.gcomptagdecls.items():
         #     print(str(key) + ': ' + g.get_name())
@@ -189,34 +175,34 @@ class CFileDeclarations(CDeclarations):
 
     # ------------------ Retrieve items from file definitions dictionary -----
 
-    def get_initinfo(self, ix: int) -> CI.CInitInfoBase:
+    def get_initinfo(self, ix):
         return self.initinfo_table.retrieve(ix)
 
-    def get_offset_init(self, ix: int) -> CI.COffsetInitInfo:
+    def get_offset_init(self, ix):
         return self.offset_init_table.retrieve(ix)
 
-    def get_varinfo(self, ix: int) -> CVarInfo:
+    def get_varinfo(self, ix):
         return self.varinfo_table.retrieve(ix)
 
-    def get_compinfo(self, ix: int) -> CCompInfo:
+    def get_compinfo(self, ix):
         return self.compinfo_table.retrieve(ix)
 
-    def get_enumitem(self, ix: int) -> CEnumItem:
+    def get_enumitem(self, ix):
         return self.enumitem_table.retrieve(ix)
 
-    def get_enuminfo(self, ix: int) -> CEnumInfo:
+    def get_enuminfo(self, ix):
         return self.enuminfo_table.retrieve(ix)
 
-    def get_fieldinfo(self, ix: int) -> CFieldInfo:
+    def get_fieldinfo(self, ix):
         return self.fieldinfo_table.retrieve(ix)
 
-    def get_typeinfo(self, ix: int) -> CTypeInfo:
+    def get_typeinfo(self, ix):
         return self.typeinfo_table.retrieve(ix)
 
-    def get_location(self, ix: int) -> CLocation:
+    def get_location(self, ix):
         return self.location_table.retrieve(ix)
 
-    def get_filename(self, ix: int) -> str:
+    def get_filename(self, ix):
         return self.filename_table.retrieve(ix)
 
     # ------------------- Provide read_xml service to file semantics files ---
@@ -233,10 +219,10 @@ class CFileDeclarations(CDeclarations):
 
     # -------------------- Index items by category ---------------------------
 
-    def index_filename(self, name: str) -> int:
+    def index_filename(self, name):
         return self.filename_table.add(name)
 
-    def index_location(self, loc: CLocation) -> int:
+    def index_location(self, loc):
         if (loc.get_line() == -1) and (loc.get_byte() == -1):
             return -1
         args = [self.index_filename(loc.get_file()), loc.get_byte(), loc.get_line()]
@@ -310,7 +296,7 @@ class CFileDeclarations(CDeclarations):
                 maxline = v.get_line()
         return maxline
 
-    def get_code_line_count(self) -> int:
+    def get_code_line_count(self):
         findex = self.index_filename(self.cfile.name + ".c")
         count = 0
         for v in self.location_table.values():
@@ -320,7 +306,7 @@ class CFileDeclarations(CDeclarations):
 
     # ---------------------------- Printing ----------------------------------
 
-    def __str__(self) -> str:
+    def __str__(self):
         lines = []
         for (t, _) in self.dictionary_tables:
             lines.append(str(t))
@@ -360,8 +346,6 @@ class CFileDeclarations(CDeclarations):
         # Initialize file definitions dictionary from _dictionary file
         self.dictionary.initialize(force)
         xnode = UF.get_cfile_dictionary_xnode(self.cfile.capp.path, self.cfile.name)
-        if xnode is None:
-            raise Exception("cfile xnode returned None")
         xnode = xnode.find("c-declarations")
         if xnode is not None:
             for (t, f) in self.dictionary_tables + self.string_tables:
@@ -370,8 +354,6 @@ class CFileDeclarations(CDeclarations):
 
         # Initialize definitions and declarations from _cfile file
         xnode = UF.get_cfile_xnode(self.cfile.capp.path, self.cfile.name)
-        if xnode is None:
-            raise Exception("cfile xnode returned None")
         self._initialize_gtypes(xnode.find("global-type-definitions"))
         self._initialize_gcomptagdefs(xnode.find("global-comptag-definitions"))
         self._initialize_gcomptagdecls(xnode.find("global-comptag-declarations"))
@@ -382,7 +364,7 @@ class CFileDeclarations(CDeclarations):
         self._initialize_gfunctions(xnode.find("functions"))
 
     def _read_xml_initinfo_table(self, xnode):
-        def get_value(node: ET.Element) -> CI.CInitInfoBase:
+        def get_value(node):
             rep = IT.get_rep(node)
             tag = rep[1][0]
             args = (self,) + rep
@@ -391,7 +373,7 @@ class CFileDeclarations(CDeclarations):
         self.initinfo_table.read_xml(xnode, "n", get_value)
 
     def _read_xml_offset_init_table(self, xnode):
-        def get_value(node: ET.Element) -> CI.COffsetInitInfo:
+        def get_value(node):
             rep = IT.get_rep(node)
             args = (self,) + rep
             return CI.COffsetInitInfo(*args)
@@ -399,7 +381,7 @@ class CFileDeclarations(CDeclarations):
         self.offset_init_table.read_xml(xnode, "n", get_value)
 
     def _read_xml_typeinfo_table(self, xnode):
-        def get_value(node: ET.Element) -> CTypeInfo:
+        def get_value(node):
             rep = IT.get_rep(node)
             args = (self,) + rep
             return CTypeInfo(*args)
@@ -407,7 +389,7 @@ class CFileDeclarations(CDeclarations):
         self.typeinfo_table.read_xml(xnode, "n", get_value)
 
     def _read_xml_varinfo_table(self, xnode):
-        def get_value(node: ET.Element) -> CVarInfo:
+        def get_value(node):
             rep = IT.get_rep(node)
             args = (self,) + rep
             return CVarInfo(*args)
@@ -415,7 +397,7 @@ class CFileDeclarations(CDeclarations):
         self.varinfo_table.read_xml(xnode, "n", get_value)
 
     def _read_xml_fieldinfo_table(self, xnode):
-        def get_value(node: ET.Element) -> CFieldInfo:
+        def get_value(node):
             rep = IT.get_rep(node)
             args = (self,) + rep
             return CFieldInfo(*args)
@@ -423,7 +405,7 @@ class CFileDeclarations(CDeclarations):
         self.fieldinfo_table.read_xml(xnode, "n", get_value)
 
     def _read_xml_compinfo_table(self, xnode):
-        def get_value(node: ET.Element) -> CCompInfo:
+        def get_value(node):
             rep = IT.get_rep(node)
             args = (self,) + rep
             return CCompInfo(*args)
@@ -431,7 +413,7 @@ class CFileDeclarations(CDeclarations):
         self.compinfo_table.read_xml(xnode, "n", get_value)
 
     def _read_xml_enumitem_table(self, xnode):
-        def get_value(node: ET.Element) -> CEnumItem:
+        def get_value(node):
             rep = IT.get_rep(node)
             args = (self,) + rep
             return CEnumItem(*args)
@@ -439,7 +421,7 @@ class CFileDeclarations(CDeclarations):
         self.enumitem_table.read_xml(xnode, "n", get_value)
 
     def _read_xml_enuminfo_table(self, xnode):
-        def get_value(node: ET.Element) -> CEnumInfo:
+        def get_value(node):
             rep = IT.get_rep(node)
             args = (self,) + rep
             return CEnumInfo(*args)
@@ -447,7 +429,7 @@ class CFileDeclarations(CDeclarations):
         self.enuminfo_table.read_xml(xnode, "n", get_value)
 
     def _read_xml_location_table(self, xnode):
-        def get_value(node: ET.Element) -> CLocation:
+        def get_value(node):
             rep = IT.get_rep(node)
             args = (self,) + rep
             return CLocation(*args)
