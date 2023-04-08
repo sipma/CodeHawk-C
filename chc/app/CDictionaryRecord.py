@@ -28,12 +28,10 @@
 from typing import List, Tuple, TYPE_CHECKING
 import xml.etree.ElementTree as ET
 
-import chc.util.IndexedTable as IT
-
 if TYPE_CHECKING:
     import chc.app.CDictionary
 
-class CDictionaryRecord(IT.IndexedTableValue):
+class CDictionaryRecord(object):
     """Base class for all objects kept in the CDictionary."""
 
     def __init__(self, cd: 'chc.app.CDictionary.CDictionary', index: int, tags: List[str], args: List[int]) -> None:
