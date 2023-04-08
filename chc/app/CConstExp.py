@@ -31,7 +31,6 @@ import chc.app.CDictionaryRecord as CD
 
 if TYPE_CHECKING:
     import chc.app.CDictionary
-    import chc.app.CExp as CE
 
 
 class CConstBase(CD.CDictionaryRecord):
@@ -46,10 +45,10 @@ class CConstBase(CD.CDictionaryRecord):
     ) -> None:
         CD.CDictionaryRecord.__init__(self, cd, index, tags, args)
 
-    def get_exp(self, ix: int) -> 'CE.CExpBase':
+    def get_exp(self, ix):
         return self.cd.get_exp(ix)
 
-    def get_strings(self) -> List[str]:
+    def get_strings(self):
         return []
 
     def is_int(self) -> bool:
@@ -152,7 +151,7 @@ class CConstWStr(CConstBase):
     ) -> None:
         CConstBase.__init__(self, cd, index, tags, args)
 
-    def get_string(self) -> str:
+    def get_string(self):
         return "-".join(self.tags[1:])
 
     def __str__(self) -> str:
@@ -177,7 +176,7 @@ class CConstChr(CConstBase):
     ) -> None:
         CConstBase.__init__(self, cd, index, tags, args)
 
-    def get_chr(self) -> str:
+    def get_chr(self):
         return "'" + str(chr(self.args[0])) + "'"
 
     def is_chr(self) -> bool:
@@ -244,8 +243,8 @@ class CConstEnum(CConstBase):
     def get_item_name(self) -> str:
         return self.tags[2]
 
-    def get_exp(self, ix: int) -> 'CE.CExpBase':
-        return CConstBase.get_exp(self, self.args[0])
+    def get_exp(self):
+        return CConstBase.getexp(self, self.args[0])
 
     def __str__(self) -> str:
         return (
@@ -253,7 +252,7 @@ class CConstEnum(CConstBase):
             + ":"
             + self.get_item_name()
             + "("
-            + str(self.get_exp(self.args[0]))
+            + str(self.get_exp())
             + ")"
         )
 

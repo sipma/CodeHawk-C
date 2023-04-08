@@ -25,15 +25,12 @@
 # SOFTWARE.
 # ------------------------------------------------------------------------------
 
-from typing import Any, Dict, List, Tuple, TYPE_CHECKING
+from typing import List, Tuple, TYPE_CHECKING
 
 import chc.app.CDictionaryRecord as CD
 
 if TYPE_CHECKING:
     import chc.app.CDictionary
-    import chc.app.CConstExp as CC
-    import chc.app.CTyp as CT
-    import chc.app.CLval as CV
 
 binoperatorstrings = {
     "band": "&",
@@ -117,22 +114,22 @@ class CExpBase(CD.CDictionaryRecord):
     def is_cn_app(self) -> bool:
         return False
 
-    def has_variable(self, vid: int) -> bool:
+    def has_variable(self, vid):
         return False
 
-    def has_variable_op(self, vid: int, op: str) -> bool:
+    def has_variable_op(self, vid, op):
         return False
 
-    def get_strings(self) -> List[str]:
+    def get_strings(self):
         return []
 
-    def get_variable_uses(self, vid: int) -> int:
+    def get_variable_uses(self, vid):
         return 0
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self):
         return {"base": "exp"}
 
-    def to_idict(self) -> Dict[str, Any]:
+    def to_idict(self):
         return {"t": self.tags, "a": self.args}
 
     def __str__(self) -> str:
@@ -160,13 +157,13 @@ class CExpConst(CExpBase):
     def is_constant(self) -> bool:
         return True
 
-    def get_constant(self) -> 'CC.CConstBase':
+    def get_constant(self):
         return self.cd.get_constant(self.args[0])
 
-    def get_strings(self) -> List[str]:
+    def get_strings(self):
         return self.get_constant().get_strings()
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self):
         return {"base": "const", "value": str(self.get_constant())}
 
     def __str__(self) -> str:
@@ -191,22 +188,22 @@ class CExpLval(CExpBase):
     ) -> None:
         CExpBase.__init__(self, cd, index, tags, args)
 
-    def get_lval(self) -> "CV.CLval":
+    def get_lval(self):
         return self.cd.get_lval(self.args[0])
 
     def is_lval(self) -> bool:
         return True
 
-    def has_variable(self, vid: int) -> bool:
+    def has_variable(self, vid):
         return self.get_lval().has_variable(vid)
 
-    def get_strings(self) -> List[str]:
+    def get_strings(self):
         return self.get_lval().get_strings()
 
-    def get_variable_uses(self, vid: int) -> int:
+    def get_variable_uses(self, vid):
         return self.get_lval().get_variable_uses(vid)
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self):
         return {"base": "lval", "lval": self.get_lval().to_dict()}
 
     def __str__(self) -> str:
@@ -231,13 +228,13 @@ class CExpSizeOf(CExpBase):
     ) -> None:
         CExpBase.__init__(self, cd, index, tags, args)
 
-    def get_type(self) -> "CT.CTypBase":
+    def get_type(self):
         return self.cd.get_typ(self.args[0])
 
     def is_sizeof(self) -> bool:
         return True
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self):
         return {"base": "sizeof", "type": self.get_type().to_dict()}
 
     def __str__(self) -> str:
@@ -262,19 +259,19 @@ class CExpSizeOfE(CExpBase):
     ) -> None:
         CExpBase.__init__(self, cd, index, tags, args)
 
-    def get_exp(self) -> CExpBase:
+    def get_exp(self):
         return self.cd.get_exp(self.args[0])
 
     def is_sizeofe(self) -> bool:
         return True
 
-    def get_strings(self) -> List[str]:
+    def get_strings(self):
         return self.get_exp().get_strings()
 
-    def get_variable_uses(self, vid: int) -> int:
+    def get_variable_uses(self, vid):
         return self.get_exp().get_variable_uses(vid)
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self):
         return {"base": "sizeofe", "exp": self.get_exp().to_dict()}
 
     def __str__(self) -> str:
@@ -299,16 +296,16 @@ class CExpSizeOfStr(CExpBase):
     ) -> None:
         CExpBase.__init__(self, cd, index, tags, args)
 
-    def get_string(self) -> str:
+    def get_string(self):
         return self.cd.get_string(self.args[0])
 
-    def get_strings(self) -> List[str]:
+    def get_strings(self):
         return [self.get_string()]
 
     def is_sizeofstr(self) -> bool:
         return True
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self):
         return {"base": "sizeofstr", "string": self.get_string()}
 
     def __str__(self) -> str:
@@ -333,13 +330,13 @@ class CExpAlignOf(CExpBase):
     ) -> None:
         CExpBase.__init__(self, cd, index, tags, args)
 
-    def get_type(self) -> "CT.CTypBase":
+    def get_type(self):
         return self.cd.get_typ(self.args[0])
 
     def is_alignof(self) -> bool:
         return True
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self):
         return {"base": "alignof", "type": self.get_type().to_dict()}
 
     def __str__(self) -> str:
@@ -367,19 +364,19 @@ class CExpAlignOfE(CExpBase):
     def is_alignofe(self) -> bool:
         return True
 
-    def get_exp(self) -> CExpBase:
+    def get_exp(self):
         return self.cd.get_exp(self.args[0])
 
-    def has_variable(self, vid: int) -> bool:
+    def has_variable(self, vid):
         return self.get_exp().has_variable(vid)
 
-    def get_strings(self) -> List[str]:
+    def get_strings(self):
         return self.get_exp().get_strings()
 
-    def get_variable_uses(self, vid: int) -> int:
+    def get_variable_uses(self, vid):
         return self.get_exp().get_variable_uses(vid)
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self):
         return {"base": "alignofe", "exp": self.get_exp().to_dict()}
 
     def __str__(self) -> str:
@@ -406,28 +403,28 @@ class CExpUnOp(CExpBase):
     ) -> None:
         CExpBase.__init__(self, cd, index, tags, args)
 
-    def get_exp(self) -> CExpBase:
+    def get_exp(self):
         return self.cd.get_exp(self.args[0])
 
-    def get_type(self) -> "CT.CTypBase":
+    def get_type(self):
         return self.cd.get_typ(self.args[1])
 
-    def get_op(self) -> str:
+    def get_op(self):
         return self.tags[1]
 
     def is_unop(self) -> bool:
         return True
 
-    def has_variable(self, vid: int) -> bool:
+    def has_variable(self, vid):
         return self.get_exp().has_variable(vid)
 
-    def get_strings(self) -> List[str]:
+    def get_strings(self):
         return self.get_exp().get_strings()
 
-    def get_variable_uses(self, vid: int) -> int:
+    def get_variable_uses(self, vid):
         return self.get_exp().get_variable_uses(vid)
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self):
         return {"base": "unop", "op": self.get_op(), "exp": self.get_exp().to_dict()}
 
     def __str__(self) -> str:
@@ -455,40 +452,40 @@ class CExpBinOp(CExpBase):
     ) -> None:
         CExpBase.__init__(self, cd, index, tags, args)
 
-    def get_exp1(self) -> CExpBase:
+    def get_exp1(self):
         return self.cd.get_exp(self.args[0])
 
-    def get_exp2(self) -> CExpBase:
+    def get_exp2(self):
         return self.cd.get_exp(self.args[1])
 
-    def get_type(self) -> "CT.CTypBase":
+    def get_type(self):
         return self.cd.get_typ(self.args[2])
 
-    def get_op(self) -> str:
+    def get_op(self):
         return self.tags[1]
 
     def is_binop(self) -> bool:
         return True
 
-    def has_variable(self, vid: int) -> bool:
+    def has_variable(self, vid):
         return self.get_exp1().has_variable(vid) or self.get_exp2().has_variable(vid)
 
-    def has_variable_op(self, vid: int, op: str) -> bool:
+    def has_variable_op(self, vid, op):
         return (
             self.get_exp1().has_variable(vid) or self.get_exp2().has_variable(vid)
         ) and (op == binoperatorstrings[self.get_op()])
 
-    def get_strings(self) -> List[str]:
+    def get_strings(self):
         c1 = self.get_exp1().get_strings()
         c2 = self.get_exp2().get_strings()
         return c1 + c2
 
-    def get_variable_uses(self, vid: int) -> int:
+    def get_variable_uses(self, vid):
         c1 = self.get_exp1().get_variable_uses(vid)
         c2 = self.get_exp2().get_variable_uses(vid)
         return c1 + c2
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self):
         return {
             "base": "binop",
             "op": self.get_op(),
@@ -531,38 +528,38 @@ class CExpQuestion(CExpBase):
     ) -> None:
         CExpBase.__init__(self, cd, index, tags, args)
 
-    def get_condition(self) -> CExpBase:
+    def get_condition(self):
         return self.cd.get_exp(self.args[0])
 
-    def get_true_exp(self) -> CExpBase:
+    def get_true_exp(self):
         return self.cd.get_exp(self.args[1])
 
-    def get_false_exp(self) -> CExpBase:
+    def get_false_exp(self):
         return self.cd.get_exp(self.args[2])
 
-    def get_type(self) -> "CT.CTypBase":
+    def get_type(self):
         return self.cd.get_typ(self.args[3])
 
-    def has_variable(self, vid: int) -> bool:
+    def has_variable(self, vid):
         return (
             self.get_condition().has_variable(vid)
             or self.get_true_exp().has_variable(vid)
             or self.get_false_exp().has_variable(vid)
         )
 
-    def get_strings(self) -> List[str]:
+    def get_strings(self):
         c = self.get_condition().get_strings()
         t = self.get_true_exp().get_strings()
         f = self.get_false_exp().get_strings()
         return c + t + f
 
-    def get_variable_uses(self, vid: int) -> int:
+    def get_variable_uses(self, vid):
         c = self.get_condition().get_variable_uses(vid)
         t = self.get_true_exp().get_variable_uses(vid)
         f = self.get_false_exp().get_variable_uses(vid)
         return c + t + f
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self):
         return {
             "base": "question",
             "cond": self.get_condition().to_dict(),
@@ -602,25 +599,25 @@ class CExpCastE(CExpBase):
     ) -> None:
         CExpBase.__init__(self, cd, index, tags, args)
 
-    def get_exp(self) -> CExpBase:
+    def get_exp(self):
         return self.cd.get_exp(self.args[1])
 
-    def get_type(self) -> "CT.CTypBase":
+    def get_type(self):
         return self.cd.get_typ(self.args[0])
 
     def is_caste(self) -> bool:
         return True
 
-    def get_strings(self) -> List[str]:
+    def get_strings(self):
         return self.get_exp().get_strings()
 
-    def has_variable(self, vid: int) -> bool:
+    def has_variable(self, vid):
         return self.get_exp().has_variable(vid)
 
-    def get_variable_uses(self, vid: int) -> int:
+    def get_variable_uses(self, vid):
         return self.get_exp().get_variable_uses(vid)
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self):
         return {
             "base": "caste",
             "exp": self.get_exp().to_dict(),
@@ -649,22 +646,22 @@ class CExpAddrOf(CExpBase):
     ) -> None:
         CExpBase.__init__(self, cd, index, tags, args)
 
-    def get_lval(self) -> "CV.CLval":
+    def get_lval(self):
         return self.cd.get_lval(self.args[0])
 
     def is_addrof(self) -> bool:
         return True
 
-    def has_variable(self, vid: int) -> bool:
+    def has_variable(self, vid):
         return self.get_lval().has_variable(vid)
 
-    def get_strings(self) -> List[str]:
+    def get_strings(self):
         return self.get_lval().get_strings()
 
-    def get_variable_uses(self, vid: int) -> int:
+    def get_variable_uses(self, vid):
         return self.get_lval().get_variable_uses(vid)
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self):
         return {"base": "addrof", "lval": self.get_lval().to_dict()}
 
     def __str__(self) -> str:
@@ -689,10 +686,10 @@ class CExpAddrOfLabel(CExpBase):
     ) -> None:
         CExpBase.__init__(self, cd, index, tags, args)
 
-    def get_label(self) -> int:
+    def get_label(self):
         return self.args[0]
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self):
         return {"base": "addroflabel", "label": self.get_label()}
 
     def __str__(self) -> str:
@@ -717,22 +714,22 @@ class CExpStartOf(CExpBase):
     ) -> None:
         CExpBase.__init__(self, cd, index, tags, args)
 
-    def get_lval(self) -> "CV.CLval":
+    def get_lval(self):
         return self.cd.get_lval(self.args[0])
 
     def is_startof(self) -> bool:
         return True
 
-    def has_variable(self, vid: int) -> bool:
+    def has_variable(self, vid):
         return self.get_lval().has_variable(vid)
 
-    def get_strings(self) -> List[str]:
+    def get_strings(self):
         return self.get_lval().get_strings()
 
-    def get_variable_uses(self, vid: int) -> int:
+    def get_variable_uses(self, vid):
         return self.get_lval().get_variable_uses(vid)
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self):
         return {"base": "startof", "lval": self.get_lval().to_dict()}
 
     def __str__(self) -> str:
@@ -763,16 +760,16 @@ class CExpCnApp(CExpBase):
     ) -> None:
         CExpBase.__init__(self, cd, index, tags, args)
 
-    def get_name(self) -> str:
+    def get_name(self):
         return self.tags[1]
 
-    def get_type(self) -> "CT.CTypBase":
+    def get_type(self):
         return self.cd.get_typ(int(self.args[0]))
 
-    def get_args(self) -> List[CExpBase]:
+    def get_args(self):
         return [self.cd.get_exp(int(i)) for i in self.args[1:]]
 
-    def has_variable(self, vid: int) -> bool:
+    def has_variable(self, vid):
         return any([a.has_variable(vid) for a in self.get_args()])
 
     def is_cn_app(self) -> bool:
