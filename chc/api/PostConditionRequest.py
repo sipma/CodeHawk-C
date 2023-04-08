@@ -15,7 +15,7 @@
 #
 # The above copyright notice and this permission notice shall be included in all
 # copies or substantial portions of the Software.
-#
+# 
 # THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 # IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
 # FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -25,9 +25,9 @@
 # SOFTWARE.
 # ------------------------------------------------------------------------------
 
-
 class PostConditionRequest(object):
-    def __init__(self, capi, postrequest, ppos, spos):
+
+    def __init__(self,capi,postrequest,ppos,spos):
         self.capi = capi
         self.cfun = self.capi.cfun
         self.postrequest = postrequest
@@ -40,24 +40,19 @@ class PostConditionRequest(object):
         return (len(self.get_open_ppos()) + len(self.get_open_spos())) > 0
 
     def get_open_ppos(self):
-        return [i for i in self.ppos if self.cfun.get_ppo(i).is_open()]
+        return [ i for i in self.ppos if self.cfun.get_ppo(i).is_open() ]
 
     def get_open_spos(self):
-        return [i for i in self.spos if self.cfun.get_spo(i).is_open()]
-
+        return [ i for i in self.spos if self.cfun.get_spo(i).is_open() ]
+    
     def __str__(self):
-        dppos = ""
+        dppos = ''
         if len(self.ppos) > 0 and len(self.get_open_ppos()) > 0:
-            dppos = (
-                "\n        --Dependent ppo's: ["
-                + ", ".join(str(i) for i in self.get_open_ppos())
-                + "]"
-            )
-        dspos = ""
+            dppos = ("\n        --Dependent ppo's: ["
+                         + ', '.join(str(i) for i in self.get_open_ppos()) + ']')
+        dspos = ''
         if len(self.spos) > 0 and len(self.get_open_spos()) > 0:
-            dspos = (
-                "\n        --Dependent spo's: ["
-                + ", ".join(str(i) for i in self.get_open_spos())
-                + "]"
-            )
-        return str(self.callee.vname) + ":" + str(self.postcondition) + dppos + dspos
+            dspos = ("\n        --Dependent spo's: ["
+                         + ', '.join(str(i) for i in self.get_open_spos()) + ']')
+        return (str(self.callee.vname) + ':' + str(self.postcondition) + dppos + dspos)
+
