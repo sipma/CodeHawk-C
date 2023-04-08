@@ -66,14 +66,11 @@ from chc.app.CTyp import (
     CTypBuiltinVaargs,
 )
 from chc.app.CTypsig import CTypsigTSBase, CTypsigList
-from chc.util.IndexedTable import IndexedTable, IndexedTableSuperclass, IndexedTableValue
+from chc.util.IndexedTable import IndexedTable, IndexedTableSuperclass
 from chc.util.StringIndexedTable import StringIndexedTable
 
 if TYPE_CHECKING:
-    from chc.api.STerm import STerm, STNumConstant, STArgValue
-    from chc.app.CCompInfo import CCompInfo
     from chc.app.CFileDictionary import CFileDictionary
-    from chc.app.CVarInfo import CVarInfo
 
 
 class CDictionary(object):
@@ -122,19 +119,16 @@ class CDictionary(object):
                 lines.append(t.name.ljust(25) + str(t.size()).rjust(4))
         return "\n".join(lines)
 
-    def get_table(self, n: str) -> Optional[IndexedTableSuperclass]:
+    def get_table(self, n: str) -> IndexedTableSuperclass:
         return next(x[0] for x in (self.tables + self.string_tables) if x[0].name == (n + "-table"))
 
     # create a count distribution for the objects in the table with name tname
     # that satisfy the respective case predicates
-    def get_distribution(
-        self,
-        tname: str,
-        cases: Dict[str, Callable[[object], bool]],
-    ) -> Dict[str, int]:
-        table = cast(Optional[IndexedTable[IndexedTableValue]], self.get_table(tname))
+    def get_distribution(self, tname, cases):
+        table = self.get_table(tname)
         if table is None:
-            raise Exception("No table found for " + tname)
+            print("No table found for " + tname)
+            return {}
         result = {}
         for c in cases:
             result[c] = len([v for v in table.values() if cases[c](v)])
@@ -199,7 +193,7 @@ class CDictionary(object):
         else:
             raise Exception('xml node was missing the tag "' + tag + '"')
 
-    def write_xml_exp(self, node: ET.Element, exp: CExpBase, tag: str = "iexp") -> None:
+    def write_xml_exp(self, node, exp, tag="iexp"):
         node.set(tag, str(self.index_exp(exp)))
 
     def read_xml_exp(self, node: ET.Element, tag: str = "iexp") -> CExpBase:
@@ -209,22 +203,16 @@ class CDictionary(object):
         else:
             raise Exception('xml node was missing the tag "' + tag + '"')
 
-    def write_xml_exp_opt(
-        self,
-        node: ET.Element,
-        exp: Optional[CExpBase],
-        tag: str = "iexp",
-    ) -> None:
+    def write_xml_exp_opt(self, node, exp, tag="iexp"):
         if exp is None:
             return
         self.write_xml_exp(node, exp)
 
-    def read_xml_exp_opt(self, node: ET.Element, tag: str = "iexp") -> Optional[CExpBase]:
-        xml_tag = node.get(tag)
-        if xml_tag is None:
-            return None
+    def read_xml_exp_opt(self, node, tag="iexp"):
+        if tag in node.attrib:
+            return self.get_exp_opt(int(node.get(tag)))
         else:
-            return self.get_exp_opt(int(xml_tag))
+            return None
 
     # ----------------------- Initialize dictionary from file ----------------
 
@@ -233,20 +221,17 @@ class CDictionary(object):
             return
         for (t, f) in self.tables + self.string_tables:
             t.reset()
-            node = xnode.find(t.name)
-            if node is None:
-                raise Exception("Missing node `" + t.name + "`")
-            f(node)
+            f(xnode.find(t.name))
 
     # --------------- stubs, overridden in file/global dictionary -------------
 
-    def index_compinfo_key(self, compinfo: "CCompInfo", _: object) -> int:
+    def index_compinfo_key(self, compinfo, _):
         return compinfo.get_ckey()
 
-    def index_varinfo_vid(self, vid: int, _: object) -> int:
+    def index_varinfo_vid(self, vid, _):
         return vid
 
-    def convert_ckey(self, ckey: int, fid: int = -1) -> int:
+    def convert_ckey(self, ckey, fid=-1):
         return ckey
 
     # -------------------- Index items by category ---------------------------
@@ -347,13 +332,13 @@ class CDictionary(object):
 
         return self.lval_table.add(IT.get_key(tags, args), f)
 
-    def varinfo_to_exp_index(self, vinfo: "CVarInfo") -> int:
+    def varinfo_to_exp_index(self, vinfo):
         lhostix = self.mk_lhost_index(["var", vinfo.vname], [vinfo.get_real_vid()])
         offsetix = self.mk_offset_index(["n"], [])
         lvalix = self.mk_lval_index([], [lhostix, offsetix])
         return self.mk_exp_index(["lval"], [lvalix])
 
-    def s_term_to_exp_index(self, t: "STerm", subst: Dict[Any, Any] = {}, fid: int = -1) -> int:
+    def s_term_to_exp_index(self, t, subst={}, fid=-1):
         """Create exp index from interface s_term"""
         if t.is_return_value():
             if "return" in subst:
@@ -361,13 +346,13 @@ class CDictionary(object):
             else:
                 raise Exception("Error in index_s_term: no return found")
         if t.is_num_constant():
-            c = cast("STNumConstant", t).get_constant()
+            c = t.get_constant()
             ctags = ["int", str(c), "iint"]
             tags = ["const"]
             args = [self.mk_constant_index(ctags, [])]
             return self.mk_exp_index(tags, args)
         if t.is_arg_value():
-            par = cast("STArgValue", t).get_parameter()
+            par = t.get_parameter()
             if par.is_global():
                 gname = par.get_name()
                 if gname in subst:
@@ -376,15 +361,10 @@ class CDictionary(object):
                     raise Exception(
                         "Error in index_s_term: global variable " + gname + " not found"
                     )
-        raise Exception("cdict missing:index_s_term: " + t.tags[0])
+        print("cdict missing:index_s_term: " + t.tags[0])
+        exit(1)
 
-    def s_term_bool_expr_to_exp_index(
-        self,
-        op: str,
-        t1: "STerm",
-        t2: "STerm",
-        subst: Dict[Any, Any] = {},
-    ) -> int:
+    def s_term_bool_expr_to_exp_index(self, op, t1, t2, subst={}):
         """Create exp index from interface s_term expression"""
         typtags = ["tint", "ibool"]
         typix = self.mk_typ_index(typtags, [])
@@ -396,92 +376,93 @@ class CDictionary(object):
         ]
         return self.mk_exp_index(tags, args)
 
-    def index_exp(self, e: CExpBase, subst: Dict[Any, Any] = {}, fid: int = -1) -> int:  # TBF
+    def index_exp(self, e, subst={}, fid=-1):  # TBF
         if e.is_constant():
-            args = [self.index_constant(cast(CExpConst, e).get_constant())]
+            args = [self.index_constant(e.get_constant())]
 
-            def f_cexpconst(index: int, key: object) -> CExpConst:
+            def f(index, key):
                 return CExpConst(self, index, e.tags, args)
 
-            return self.exp_table.add(IT.get_key(e.tags, args), f_cexpconst)
+            return self.exp_table.add(IT.get_key(e.tags, args), f)
         if e.is_sizeof():
-            args = [self.index_typ(cast(CExpSizeOf, e).get_type())]
+            args = [self.index_typ(e.get_type())]
 
-            def f_cexpsizeof(index: int, key: object) -> CExpSizeOf:
+            def f(index, key):
                 return CExpSizeOf(self, index, e.tags, args)
 
-            return self.exp_table.add(IT.get_key(e.tags, args), f_cexpsizeof)
+            return self.exp_table.add(IT.get_key(e.tags, args), f)
         if e.is_sizeofe():
-            args = [self.index_exp(cast(CExpSizeOfE, e).get_exp(), subst=subst, fid=fid)]
+            args = [self.index_exp(e.get_exp(), subst=subst, fid=fid)]
 
-            def f_cexpsizeofe(index: int, key: object) -> CExpSizeOfE:
+            def f(index, key):
                 return CExpSizeOfE(self, index, e.tags, args)
 
             return self.exp_table.add(IT.get_key(e.tags, args), f)
         if e.is_sizeofstr():
-            args = [self.index_string(cast(CExpSizeOfStr, e).get_string())]
+            args = [self.index_string(e.get_string())]
 
-            def f_cexpsizeofstr(index: int, key: object) -> CExpSizeOfStr:
+            def f(index, key):
                 return CExpSizeOfStr(self, index, e.tags, args)
 
-            return self.exp_table.add(IT.get_key(e.tags, args), f_cexpsizeofstr)
+            return self.exp_table.add(IT.get_key(e.tags, args), f)
         if e.is_unop():
             args = [
-                self.index_exp(cast(CExpUnOp, e).get_exp(), subst=subst, fid=fid),
-                self.index_typ(cast(CExpUnOp, e).get_type()),
+                self.index_exp(e.get_exp(), subst=subst, fid=fid),
+                self.index_typ(e.get_type()),
             ]
 
-            def f_cexpunop(index: int, key: object) -> CExpUnOp:
+            def f(index, key):
                 return CExpUnOp(self, index, e.tags, args)
 
-            return self.exp_table.add(IT.get_key(e.tags, args), f_cexpunop)
+            return self.exp_table.add(IT.get_key(e.tags, args), f)
         if e.is_binop():
             args = [
-                self.index_exp(cast(CExpBinOp, e).get_exp1(), subst=subst, fid=fid),
-                self.index_exp(cast(CExpBinOp, e).get_exp2(), subst=subst, fid=fid),
-                self.index_typ(cast(CExpBinOp, e).get_type()),
+                self.index_exp(e.get_exp1(), subst=subst, fid=fid),
+                self.index_exp(e.get_exp2(), subst=subst, fid=fid),
+                self.index_typ(e.get_type()),
             ]
 
-            def f_cexpbinop(index: int, key: object) -> CExpBinOp:
+            def f(index, key):
                 return CExpBinOp(self, index, e.tags, args)
 
-            return self.exp_table.add(IT.get_key(e.tags, args), f_cexpbinop)
+            return self.exp_table.add(IT.get_key(e.tags, args), f)
         if e.is_caste():
             args = [
-                self.index_typ(cast(CExpCastE, e).get_type()),
-                self.index_exp(cast(CExpCastE, e).get_exp(), subst=subst, fid=fid),
+                self.index_typ(e.get_type()),
+                self.index_exp(e.get_exp(), subst=subst, fid=fid),
             ]
 
-            def f(index: int, key: object) -> CExpCastE:
+            def f(index, key):
                 return CExpCastE(self, index, e.tags, args)
 
             return self.exp_table.add(IT.get_key(e.tags, args), f)
         if e.is_addrof():
-            args = [self.index_lval(cast(CExpAddrOf, e).get_lval(), subst=subst, fid=fid)]
+            args = [self.index_lval(e.get_lval(), subst=subst, fid=fid)]
 
-            def f_cexpaddrof(index: int, key: object) -> CExpAddrOf:
+            def f(index, key):
                 return CExpAddrOf(self, index, e.tags, args)
 
-            return self.exp_table.add(IT.get_key(e.tags, args), f_cexpaddrof)
+            return self.exp_table.add(IT.get_key(e.tags, args), f)
         if e.is_startof():
-            args = [self.index_lval(cast(CExpStartOf, e).get_lval(), subst=subst, fid=fid)]
+            args = [self.index_lval(e.get_lval(), subst=subst, fid=fid)]
 
-            def f_cexpstartof(index: int, key: object) -> CExpStartOf:
+            def f(index, key):
                 return CExpStartOf(self, index, e.tags, args)
 
-            return self.exp_table.add(IT.get_key(e.tags, args), f_cexpstartof)
+            return self.exp_table.add(IT.get_key(e.tags, args), f)
         if e.is_lval():
-            args = [self.index_lval(cast(CExpLval, e).get_lval(), subst=subst, fid=fid)]
+            args = [self.index_lval(e.get_lval(), subst=subst, fid=fid)]
 
-            def f_cexplval(index: int, key: object) -> CExpLval:
+            def f(index, key):
                 return CExpLval(self, index, e.tags, args)
 
-            return self.exp_table.add(IT.get_key(e.tags, args), f_cexplval)
-        raise Exception("cdict:no case yet for exp " + str(e))
+            return self.exp_table.add(IT.get_key(e.tags, args), f)
+        print("cdict:no case yet for exp " + str(e))
+        exit(1)
 
     def index_funarg(self, funarg: CFunArg) -> int:
-        tags: List[str] = [funarg.get_name()]
-        args: List[int] = [self.index_typ(funarg.get_type())]
+        tags = [funarg.get_name()]
+        args = [self.index_typ(funarg.get_type())]
 
         def f(index: int, key: Tuple[str, str]) -> CFunArg:
             return CFunArg(self, index, tags, args)
@@ -499,30 +480,29 @@ class CDictionary(object):
 
         return self.funargs_table.add(IT.get_key(tags, args), f)
 
-    def index_lhost(self, h: CLHostBase, subst: Dict[Any, Any] = {}, fid: int = -1) -> int:
+    def index_lhost(self, h, subst={}, fid=-1):
         if h.is_var():
-            args = [self.index_varinfo_vid(cast(CLHostVar, h).get_vid(), fid)]
+            args = [self.index_varinfo_vid(h.get_vid(), fid)]
 
-            def f_clhostvar(index: int, key: object) -> CLHostVar:
+            def f(index, key):
                 return CLHostVar(self, index, h.tags, args)
 
-            return self.lhost_table.add(IT.get_key(h.tags, args), f_clhostvar)
+            return self.lhost_table.add(IT.get_key(h.tags, args), f)
         if h.is_mem():
-            args = [self.index_exp(cast(CLHostMem, h).get_exp(), subst=subst, fid=fid)]
+            args = [self.index_exp(h.get_exp(), subst=subst, fid=fid)]
 
-            def f(index: int, key: object) -> CLHostMem:
+            def f(index, key):
                 return CLHostMem(self, index, h.tags, args)
 
             return self.lhost_table.add(IT.get_key(h.tags, args), f)
-        raise Exception("Unknown type of lhost: \"" + str(h) + "\"")
 
-    def index_lval(self, lval: CLval, subst: Dict[Any, Any] = {}, fid: int = -1) -> int:
+    def index_lval(self, lval, subst={}, fid=-1):
         args = [
             self.index_lhost(lval.get_lhost(), subst=subst, fid=fid),
             self.index_offset(lval.get_offset()),
         ]
 
-        def f(index: int, key: object) -> CLval:
+        def f(index, key):
             return CLval(self, index, [], args)
 
         return self.lval_table.add(IT.get_key([], args), f)
@@ -680,17 +660,17 @@ class CDictionary(object):
     def index_string(self, s: str) -> int:
         return self.string_table.add(s)
 
-    def write_xml(self, node: ET.Element) -> None:
-        def f(n: ET.Element, r: Any) -> None:
+    def write_xml(self, node):
+        def f(n, r):
             r.write_xml(n)
 
         for (t, _) in self.tables:
             tnode = ET.Element(t.name)
-            cast(IndexedTable[IndexedTableValue], t).write_xml(tnode, f)
+            t.write_xml(tnode, f)
             node.append(tnode)
         for (t, _) in self.string_tables:
             tnode = ET.Element(t.name)
-            cast(StringIndexedTable, t).write_xml(tnode)
+            t.write_xml(tnode)
             node.append(tnode)
 
     def __str__(self) -> str:

@@ -41,12 +41,12 @@ if TYPE_CHECKING:
 
 
 class CKeyLookupError(Exception):
-    def __init__(self, thisfid: object, tgtfid: object, ckey: object) -> None:
+    def __init__(self, thisfid, tgtfid, ckey):
         self.thisfid = thisfid
         self.tgtfid = tgtfid
         self.ckey = ckey
 
-    def __str__(self) -> str:
+    def __str__(self):
         return (
             "Unable to find corresponding compinfo key for "
             + str(self.ckey)
@@ -66,11 +66,7 @@ class CFileDictionary(CDictionary):
 
     def initialize(self, force=False):
         xnode = UF.get_cfile_dictionary_xnode(self.cfile.capp.path, self.cfile.name)
-        if xnode is None:
-            raise Exception("UF.get_cfile_dictionary_xnode returned None")
         xnode = xnode.find("c-dictionary")
-        if xnode is None:
-            raise Exception("Missing node `c-dictionary`")
         CDictionary.initialize(self, xnode, force)
 
     def index_compinfo_key(self, compinfo, _):
