@@ -130,7 +130,10 @@ class CProofDiagnostic:
                     for n in inode.findall("arg"):
                         xargindex = n.get("a")
                         xarginvs = n.get("i")
-                        if xargindex is not None and xarginvs is not None:
+                        if (
+                                xargindex is not None
+                                and xarginvs is not None
+                                and not (xarginvs == '')):
                             self._invsmap[int(xargindex)] = [
                                 int(x) for x in xarginvs.split(",")]
         return self._invsmap
