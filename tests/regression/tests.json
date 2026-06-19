@@ -20,6 +20,22 @@
             }
         },
         {
+            "filename": "imagick-pointer-plus-index-global-po.c",
+            "description": "Issue #79, CodeHawk-C",
+            "expected": {
+                "safe": 50,
+                "open": 3
+            }
+        },
+        {
+            "filename": "pointer_plus_int_upper_bound.c",
+            "description": "Issue #76, CodeHawk-C",
+            "expected": {
+                "safe": 66,
+                "open": 12
+            }
+        },
+        {
             "filename": "my_regexec_pointer_diff_cast.c",
             "expected": {
                 "safe": 106,
@@ -32,6 +48,88 @@
             "expected": {
                 "safe": 42,
                 "open": 5
+            },
+            "goal": "improve"
+        },
+        {
+            "filename": "stack_address_escape_scratch_buffer.c",
+            "description": "False-positive stack-address-escape: local array used as scratch buffer via value-parameter pointer; address cannot escape since s is passed by value, not char**",
+            "expected": {
+                "violation": 2,
+                "open": 2
+            },
+            "goal": "improve"
+        },
+        {
+            "filename": "signed_to_signed_cast_bitor.c",
+            "description": "Open signed-to-signed-cast obligations due to missing bitwise-OR range propagation: xop_2_numexpr treats XBOr as RANDOM; with Option A fix, lb->safe (C>=safelb), ub->violation (C>safeub)",
+            "expected": {
+                "open": 2
+            },
+            "goal": "improve"
+        },
+        {
+            "filename": "uint16_swap_intermediate_cast.c",
+            "description": "False-positive signed-to-unsigned-cast-ub: caste(uint16_t, X) where X > 65535 is not modelled as modular truncation; the un-truncated int value propagates into the OR and exceeds uint16_t max; byte_swap_lo (val=31) is correctly safe because 31<<8=7936 fits in uint16_t without truncation",
+            "expected": {
+                "safe": 52,
+                "violation": 2
+            },
+            "goal": "improve"
+        },
+        {
+            "filename": "fold_search_index_upper_bound.c",
+            "description": "Binary search index-upper-bound precision gap: interval widening overestimates k's range (buggy j=N gives k in [0,6]; fixed j=N-1 gives k in [0,5]); both produce open POs because the relational invariant i<=j cannot be expressed in the interval domain; violation only detectable via direct constant OOB access (fold_search_oob_step)",
+            "expected": {
+                "safe": 63,
+                "open": 4,
+                "violation": 1
+            },
+            "goal": "improve"
+        },
+        {
+            "filename": "struct_heap_invariant.c",
+            "description": "Cross-function heap invariant gap: ivec_set accesses v->data after a bounds check but carries 6 open POs (not-null, valid-mem, in-scope, lower-bound, upper-bound, ptr-upper-bound-deref) because the analyzer has no model for the postcondition of ivec_create (data is non-null and size(data)==size); inspired by bmp_set_pixel in libbmp with 13 open POs on pixels[x][y] for the same root cause",
+            "expected": {
+                "safe": 74,
+                "open": 18
+            },
+            "goal": "improve"
+        },
+        {
+            "filename": "initialized_range_from_init.c",
+            "description": "R8: initialized-range discharge handler has no transfer functions for (A) scalar assignment -- uint16_t val=42; fwrite(&val,...) -- (B) struct-copy -- pair_t p=*src; fwrite(&p.a,...) -- or (C) memset -- memset(buf,0,n); fwrite(buf,...); in all three cases the byte range is provably initialized but the handler lacks the scalar->range, struct-copy->field-range, and memset->range rules",
+            "expected": {
+                "safe": 108,
+                "open": 15
+            },
+            "goal": "improve"
+        },
+        {
+            "filename": "no_overlap_disjoint_allocs.c",
+            "description": "R9: no-overlap discharge handler does not use allocation-site disjointness; fwrite generates no-overlap(buf, fp) for its two arguments; when buf is a stack variable and fp is from fopen (different allocation origins: stack vs heap), or buf is from malloc and fp is from fopen (two distinct call sites), they cannot overlap but the handler does not apply the disjoint-allocation rule",
+            "expected": {
+                "safe": 124,
+                "open": 16
+            },
+            "goal": "improve"
+        },
+        {
+            "filename": "not_zero_static_const_divisor.c",
+            "description": "R11: not-zero false positive on static const divisors -- CodeHawk models static const variables as opaque globals of unknown value, even when their initializers are compile-time constant expressions; every division or modulo by such a constant produces an open not-zero PO; as a side effect, int-overflow is also open for signed division (INT_MIN / -1 cannot be ruled out when the divisor is unknown); no int-overflow PO is generated for % -- this is consistent with C99 (S6.5.5p6 only says the constraint (a/b)*b+a%b==a holds when the quotient is representable, leaving % behavior unspecified when it is not) but would be a missing PO under C11 (S6.5.5p6 adds: otherwise the behavior of both a/b and a%b is undefined); three depth levels: literal initializer, one-level product, two-level product; contrast: #define macros ARE treated as literals and discharge not-zero",
+            "expected": {
+                "safe": 12,
+                "open": 12
+            },
+            "goal": "improve"
+        },
+        {
+            "filename": "null_terminated_argv_after_guard.c",
+            "description": "R10: argv discharge handler uses argc#init (unconstrained formal-parameter value) when composing multiple path guards; after if(argc==0)return then inside if(argc<3), argc is in [1,2] so argv[0] should be valid, but the handler cannot derive 0 < argc#init from the compound constraint; single-guard paths work (argv[1] and argv[2] after the outer guard are safe); 6 open POs for argv[0] (null-terminated, initialized-range, not-null, initialized, ptr-upper-bound, valid-mem), 2 violations from atoi addition overflow",
+            "expected": {
+                "safe": 78,
+                "open": 6,
+                "violation": 2
             },
             "goal": "improve"
         }
